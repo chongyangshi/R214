@@ -62,6 +62,7 @@ def readiter(fi, names, sep=' '):
     @return         An iterator for sequences.
     """
     X = []
+    fi.seek(0) # Rewind to do this multiple times.
     for line in fi:
         line = line.strip('\n')
         if not line:
