@@ -26,18 +26,16 @@ test_csv = open(path.abspath(path.expanduser(sys.argv[3])), 'r')
 ablation_path = path.join(path.dirname(path.dirname(path.realpath(__file__))), 'ablation')
 feature_keys = [i[0] for i in features]
 feature_items = [i[1] for i in features]
+input_columns = ' '.join([i[0] for i in features if len(i[0]) > 0]) + ' y'
 
 for ablated_feature, _ in features:
     
-    input_columns = ''
     attribute_templates = []
     for i, _ in enumerate(feature_keys):
         if feature_keys[i] != ablated_feature and feature_keys[i] != '':
-            input_columns += feature_keys[i] + ' '
             attribute_templates += feature_items[i]
-    input_columns += 'y'
 
-    print("Using features: {} ({}).".format(input_columns, str(attribute_templates)))
+    print("Using features: {}.".format(str(attribute_templates)))
 
     feature_extractor = lambda x: crfutils.apply_templates(x, attribute_templates)
     
