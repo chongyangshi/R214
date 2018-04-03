@@ -9,6 +9,7 @@ import sys
 from os import path, getcwd
 
 features = [
+    ('', []),
     ('word', [[['word', 0]], [['word', -1]], [['word', 1]]]),
     ('lemma', [[['lemma', 0]]]),
     ('soundex', [[['soundex', 0]]]),
@@ -31,15 +32,14 @@ for ablated_feature, _ in features:
     input_columns = ''
     attribute_templates = []
     for i, _ in enumerate(feature_keys):
-        if feature_keys[i] != ablated_feature:
+        if feature_keys[i] != ablated_feature and feature_keys[i] != '':
             input_columns += feature_keys[i] + ' '
             attribute_templates += feature_items[i]
     input_columns += 'y'
 
     print("Using features: {} ({}).".format(input_columns, str(attribute_templates)))
 
-    def feature_extractor(sentence):
-        crfutils.apply_templates(sentence, attribute_templates)
+    feature_extractor = lambda x: crfutils.apply_templates(x, attribute_templates)
     
     for fi, txt in [(train_csv, "train"), (devel_csv, "devel"), (test_csv, "test")]:
         write_to = path.join(ablation_path, txt + "_without_" + ablated_feature + ".crfsuite")
@@ -50,3 +50,4 @@ for ablated_feature, _ in features:
 
 train_csv.close()
 devel_csv.close()
+test_csv.close()
