@@ -134,9 +134,7 @@ def to_crfsuite(X):
         xseq.append(item)
     return xseq
 
-def main(feature_extractor, fields='w pos y', sep=' '):
-    fi = sys.stdin
-    fo = sys.stdout
+def main(feature_extractor, fi, fo, fields='w pos y', sep=' '):
 
     # Parse the command-line arguments.
     parser = optparse.OptionParser(usage="""usage: %prog [options]
