@@ -54,9 +54,9 @@
 For the main course assignment, I am undertaking the second practical option (\textbf{1.2}): \emph{extracting chemical-disease associations from the biological literature}.
 
 \section{Improving the Conditional Random Fields named entity recognizer}
-\subsection{Ablating features from the original feature set}
+\subsection{Ablating features from the original feature set} \label{subsec:ablating}
 
-Based on the default \emph{n}-gram feature set in the feature extraction script, the script was modified to ablate each feature in turn. To provide a better understanding of the effects by offsets of surface form words, all surface forms of words within an offset of 1 were knocked out from the templates first, then just the surface forms of words before and after the current word (-1/1). Other features including the lemma, phonetic coding ($soundex$), part-of-speech, and chunk in IOB2 notation of the current word only. The resulting precisions, recall rates, and $F_1$-scores from ablating each feature are presented separately in Figures \ref{fig:ablation1}, \ref{fig:ablation2}, and \ref{fig:ablation3}. For each named entity class as well as the average performance, with none-ablated as reference, improved performance due to ablation are presented in \textbf{bold}.
+Based on the default \emph{n}-gram feature set in the feature extraction script, the script was modified to ablate each feature in turn. To provide a better understanding of the effects by offsets of surface form words, all surface forms of words within an offset of 1 (the trigram) were knocked out from the templates first, then just the surface forms of words before and after the current word (-1/1). Other features including the lemma, phonetic coding ($soundex$), part-of-speech, and chunk in IOB2 notation of the current word only. The resulting precisions, recall rates, and $F_1$-scores from ablating each feature on the \emph{devel} dataset are presented separately in Figures \ref{fig:ablation1}, \ref{fig:ablation2}, and \ref{fig:ablation3}. For each named entity class as well as the overall average, with none-ablated as reference, improved performance due to ablation are presented in \textbf{bold}.
 
 \begin{figure}[h]
 \begin{center}
@@ -106,7 +106,7 @@ I-Chemical  & 0.6665 & 0.5720 & 0.5920 & 0.6662 & 0.6654 & \textbf{0.6782} & \te
 \end{center}
 \end{figure}
 
-Surprisingly, for chemicals at the beginning of entities (B-Chemcal), the precision (correct tags among those tagged) increased substantially when the surface form word feature is ablated. Ablating only the surface forms of before and after tokens (-1/1) produced slightly higher precision than ablating that of before, current, and after tokens. This is however accompanied by substantially reduced precisions on all other named entity classes, as well as reduced recall rate (correct tags among all relevant inputs that can be tagged) nearly across the board. As B-chemicals already bear a fairly high precision (91.78\%), it is not advisable to ablate the surface forms in exchange for lowering recall into the 50\%s. 
+Surprisingly, for chemicals at the beginning of entities (B-Chemcal), the precision (correct tags among those tagged) increased substantially when the surface form word feature is ablated. Ablating only the surface forms of before and after tokens (-1/1) produced slightly higher precision than ablating the entire surface form trigram. This is however accompanied by substantially reduced precisions on all other named entity classes, as well as reduced recall rate (correct tags among all relevant inputs that can be tagged) nearly across the board. As B-chemicals already bear a fairly high precision (91.78\%), it is not advisable to ablate the surface forms in exchange for lowering recall into the 50\%s. 
 
 Ablation of the lemma (base word) and the phonetic coding ($soundex$) yielded minimal improvements to precisions on some named entity groups but minimal reductions on others. Recall rates all reduced by very small margins. Based on a generally negative outlook on the $F_1$-scores (combined metric of precision and recall), it is advisable not to alate either of he two features.
 
@@ -115,6 +115,43 @@ Ablating the part-of-speech produced the greatest precision improvements to most
 Finally, ablating the chunk information from the feature set improved the precision without significantly affecting the recall rate in most cases, resulting in improved $F_1$-scores for all named entity classes barring diseases within entities (I-Disease) with a minimal decrease. Therefore, it is advisable to ablate the chunk information from the feature set used.
 
 Vertically, precision and recall rates of terms outside entities (O) are high and only very minimally affected by ablating any of the features, which is generally expected in entity recognition operations due to the abundance of outside tokens between short named entities \cite{ratinov2009design}.
+
+\subsection{Improvements to the base tagger}
+
+After removing chunk information to improve performance of the base feature set (as described above), I will first experiment with expanding the \emph{n}-gram feature set by expanding unigram features into trigram features. Then, I will examine the effects of adjusting several parameters of the L-BFGS training algorithm used in \emph{crfsuite}.
+
+\subsubsection{Expansion of unigram features}
+
+Evaluations of word representation features in entity recognition by Tang et al. \cite{tang2014evaluating} demonstrated the benefits of using trigram features in word stemming. With this as inspiration, I iteratively expanded the unigram features of lemma, part-of-speech, and the phonetic coding ($soundex$) in the feature set. The order of expansion was chosen due to lemma being directly related to word stemming, part-of-speech correlations between neighbouring words normally being important, and the phonetic coding being the one left. The resulting performance information are shown in Figure \ref{fig:trigrams}.
+
+ \begin{figure}[h]
+\begin{center}
+\fontsize{9}{11}\selectfont
+\begin{tabular}{|*{7}{c|}}\hline
+\textbf{Expanded from unigram}  & \multicolumn{3}{c|}{None} & \multicolumn{3}{c|}{$lemma$}  \\ \hline 
+\textbf{Entity Class} & Precision & Recall & $F_1$-score & Precision & Recall & $F_1$-score  \\ \hline
+B-Chemical & 0.9210 & 0.6652 & 0.7725 & 0.9137 & 0.6695 & 0.7728 \\ \hline
+O                 & 0.9557 & 0.9894 & 0.9723 & 0.9559 & 0.9890 & 0.9722\\ \hline
+B-Disease   & 0.8396 & 0.5992 & 0.6993 & 0.8365 & 0.5992 & 0.6982 \\ \hline
+I-Disease    & 0.7509 & 0.5952 & 0.6641 & 0.7519 & 0.6040 & 0.6699 \\ \hline
+I-Chemical  & 0.7682 & 0.5990 & 0.6731 & 0.7820 & 0.6013 & 0.6798 \\ \hline
+\textbf{Macro-average} & 0.8471 & 0.6896 & 0.7562 & 0.8480 & 0.6926 & 0.7586 \\ \hline \hline
+\textbf{Expanded from unigram}  & \multicolumn{3}{c|}{$lemma$ + $pos$} & \multicolumn{3}{c|}{$lemma$ + $pos$ + $soundex$} \\ \hline 
+\textbf{Entity Class} & Precision & Recall & $F_1$-score & Precision & Recall & $F_1$-score  \\ \hline
+B-Chemical & 0.9077 & 0.6864 & 0.7817 & 0.9077 & 0.6875 & 0.7824 \\ \hline
+O                 & 0.9574 & 0.9894 & 0.9731 & 0.9574 & 0.9894 & 0.9731 \\ \hline
+B-Disease   & 0.8499 & 0.6162 & 0.7144 & 0.8477 & 0.6124 & 0.7111 \\ \hline
+I-Disease    & 0.7819 & 0.6103 & 0.6855 & 0.7795 & 0.6110 & 0.6850 \\ \hline
+I-Chemical  & 0.7884 & 0.6138 & 0.6903 & 0.8010 & 0.6241 & 0.7016 \\ \hline
+\textbf{Macro-average} & 0.8570 & 0.7032 & 0.7690 & 0.8587 & 0.7049 & 0.7706 \\ \hline
+\end{tabular}
+\caption{\label{fig:trigrams} Resulting performance on the \emph{devel} dataset after expanding unigram features into trigram features in the baseline feature set. ``None'' represents the baseline feature set with $chunk$ ablated.}
+\end{center}
+\end{figure}
+
+While the precision of B-Chemical tagging continues to follow the declining trend discussed in \ref{subsec:ablating} (although not as severe in unigram expansion as in feature ablation), expanding unigram features of lemma, part-of-speech, and the phonetic coding into trigrams have resulted in improved or roughly equal precisions, recall rates -- and hence $F_1$-scores. Precision improvements were most notable from the additions of lemma and phonetic coding on chemicals within entities (I-Chemical), showing the influence of phonetic features of nearby entities on chemical entity recognition. The strongest improvement of recall and the $F_1$-score originated from expanding part-of-speech to nearby entities, demonstrating the importance of expanding the semantic scope. While precisions of some named entities took a small hit when the phonetic coding ($soundex$) was added, the improved macro-average precision as well as generally improved recall rates and $F_1$-scores were behind my choice of retaining all three unigram expansions.
+
+\subsubsection{Adjustment of training parameters}
 
 \bibliographystyle{IEEEtran}
 \footnotesize{\bibliography{report}}

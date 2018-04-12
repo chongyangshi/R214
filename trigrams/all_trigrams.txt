@@ -1,0 +1,10 @@
+Performance by label (#match, #model, #ref) (precision, recall, F1):
+    B-Chemical: (3676, 4050, 5347) (0.9077, 0.6875, 0.7824)
+    O: (102288, 106839, 103389) (0.9574, 0.9894, 0.9731)
+    B-Disease: (2599, 3066, 4244) (0.8477, 0.6124, 0.7111)
+    I-Disease: (1665, 2136, 2725) (0.7795, 0.6110, 0.6850)
+    I-Chemical: (1091, 1362, 1748) (0.8010, 0.6241, 0.7016)
+Macro-average precision, recall, F1: (0.858653, 0.704877, 0.770645)
+Item accuracy: 111319 / 117453 (0.9478)
+Instance accuracy: 2136 / 4579 (0.4665)
+Elapsed time: 0.728172 [sec] (6288.3 [instance/sec])
