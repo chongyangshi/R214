@@ -2,7 +2,9 @@
 \usepackage[left=25mm,top=25mm,right=25mm,bottom=25mm]{geometry}   
 \geometry{a4paper}
 \usepackage{algorithm,algpseudocode}  
-\usepackage{graphicx}					
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{pgfplots}					
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{gensymb}
@@ -20,7 +22,6 @@
 \usepackage{fixltx2e}
 \usepackage{color}
 \usepackage{diagbox}
-\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
 \usepackage[parfill]{parskip}
 \setlength{\headsep}{5pt}
 \graphicspath{ {images/} }
@@ -124,7 +125,7 @@ After removing chunk information to improve performance of the base feature set 
 
 Evaluations of word representation features in entity recognition by Tang et al. \cite{tang2014evaluating} demonstrated the benefits of using trigram features in word stemming. With this as inspiration, I iteratively expanded the unigram features of lemma, part-of-speech, and the phonetic coding ($soundex$) in the feature set. The order of expansion was chosen due to lemma being directly related to word stemming, part-of-speech correlations between neighbouring words normally being important, and the phonetic coding being the one left. The resulting performance information are shown in Figure \ref{fig:trigrams}.
 
- \begin{figure}[h]
+\begin{figure}[h]
 \begin{center}
 \fontsize{9}{11}\selectfont
 \begin{tabular}{|*{7}{c|}}\hline
@@ -145,13 +146,81 @@ I-Disease    & 0.7819 & 0.6103 & 0.6855 & 0.7795 & 0.6110 & 0.6850 \\ \hline
 I-Chemical  & 0.7884 & 0.6138 & 0.6903 & 0.8010 & 0.6241 & 0.7016 \\ \hline
 \textbf{Macro-average} & 0.8570 & 0.7032 & 0.7690 & 0.8587 & 0.7049 & 0.7706 \\ \hline
 \end{tabular}
-\caption{\label{fig:trigrams} Resulting performance on the \emph{devel} dataset after expanding unigram features into trigram features in the baseline feature set. ``None'' represents the baseline feature set with $chunk$ ablated.}
+\caption{\label{fig:trigrams} Resulting tagging performance on the \emph{devel} dataset after expanding unigram features into trigram features in the baseline feature set. ``None'' represents the baseline feature set with $chunk$ ablated.}
 \end{center}
 \end{figure}
 
 While the precision of B-Chemical tagging continues to follow the declining trend discussed in \ref{subsec:ablating} (although not as severe in unigram expansion as in feature ablation), expanding unigram features of lemma, part-of-speech, and the phonetic coding into trigrams have resulted in improved or roughly equal precisions, recall rates -- and hence $F_1$-scores. Precision improvements were most notable from the additions of lemma and phonetic coding on chemicals within entities (I-Chemical), showing the influence of phonetic features of nearby entities on chemical entity recognition. The strongest improvement of recall and the $F_1$-score originated from expanding part-of-speech to nearby entities, demonstrating the importance of expanding the semantic scope. While precisions of some named entities took a small hit when the phonetic coding ($soundex$) was added, the improved macro-average precision as well as generally improved recall rates and $F_1$-scores were behind my choice of retaining all three unigram expansions.
 
 \subsubsection{Adjustment of training parameters}
+
+The L-BFGS training algorithm used in entity recognition uses L2 regularization, which is normally more efficient than L1 \cite{cortes20092}, with a regularization parameter influencing the levels of bias and overfitting. Various values around the default $c2 = 1$ were tested, with broadly similar trends in variations of precision, recall, and $F_1$-score in individual named entities. Therefore, only the macro-average metrics from tagging the \emph{devel} dataset with a model trained on each value of $c2$ are plotted in Figure \ref{fig:c2}.
+
+ \begin{figure}[h]
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    xlabel={c2 Regularization Parameter},
+    ylabel={Performance},
+    xmin=0, xmax=2.5,
+    ymin=0, ymax=1.0,
+    xtick={0, 0.5, ..., 2.5},
+    ytick={0, 0.1, ..., 1.0},
+    legend pos=south east,
+    ymajorgrids=true,
+    grid style=dashed,
+]
+ 
+\addplot[
+color=blue,
+mark=x,
+]
+coordinates {
+(0.05,0.780505)(0.1,0.782937)(0.25,0.781873)(0.5,0.777822)(1.0,0.770645)(2.0,0.753415)
+};
+\addplot[
+color=red,
+mark=x,
+]
+coordinates {
+(0.05,0.730290)(0.1,0.730579)(0.25,0.724635)(0.5,0.715561)(1.0,0.704877)(2.0,0.682223)
+};
+\addplot[
+color=green,
+mark=x,
+]
+coordinates {
+(0.05,0.843873)(0.1,0.848921)(0.25,0.855177)(0.5,0.859233)(1.0,0.858653)(2.0,0.853710)
+};
+\legend{$F_1$-score,Recall,Precision}
+\end{axis}
+\end{tikzpicture}
+\caption{\label{fig:c2} Resulting tagging performance on the \emph{devel} dataset with models trained on different c2 values.}
+\end{center}
+\end{figure}
+
+A reduced $c2$ parameter results in longer training, but also generally improved recall and the overall $F_1$-score. With the adverse effects of extended training time and reduced precision (due to increased overfitting), as well as diminished gains in recall, $c2=0.25$ was chosen as the $c2$ value of choice.
+
+With $c2=0.25$, L-BFGS also allows different line search algorithms, which yield roughly the same training speed, as well as almost the same performance with all named entity classes, as shown in Figure \ref{fig:linesearch}. Therefore the default More and Thuente's method is kept unchanged.
+
+\begin{figure}[h]
+\begin{center}
+\fontsize{9}{11}\selectfont
+\begin{tabular}{|*{10}{c|}}\hline
+\textbf{Line Search}  & \multicolumn{3}{c|}{$MoreThuente$} & \multicolumn{3}{c|}{$Backtracking$} & \multicolumn{3}{c|}{$StrongBacktracking$}  \\ \hline 
+\textbf{Entity Class} & Precision & Recall & $F_1$-score & Precision & Recall & $F_1$-score & Precision & Recall & $F_1$-score \\ \hline
+B-Chemical & 0.9223 & 0.6972 & 0.7941 & 0.9223 & 0.6972 & 0.7941 & 0.9223 & 0.6972 & 0.7941 \\ \hline
+O                 & 0.9609 & 0.9884 & 0.9745 & 0.9609 & 0.9884 & 0.9744 & 0.9609 & 0.9884 & 0.9744 \\ \hline
+B-Disease   & 0.8363 & 0.6671 & 0.7422 & 0.8353 & 0.6656 & 0.7409 & 0.8352 & 0.6661 & 0.7411 \\ \hline
+I-Disease    & 0.7515 & 0.6338 & 0.6876 & 0.7520 & 0.6330 & 0.6874 & 0.7520 & 0.6330 & 0.6874 \\ \hline
+I-Chemical  & 0.8048 & 0.6367 & 0.7110 & 0.8048 & 0.6367 & 0.7110 & 0.8048 & 0.6367 & 0.7110 \\ \hline
+\textbf{Macro-average} & 0.8552 & 0.7246 & 0.7819 & 0.8550 & 0.7242 & 0.7816 & 0.8550 & 0.7243 & 0.7816 \\ \hline
+\end{tabular}
+\caption{\label{fig:trigrams} Resulting tagging performance on the \emph{devel} dataset with different line search algorithms: More and Thuente's method, backtracking method with regular Wolfe condition, and backtracking method with strong Wolfe condition.}
+\end{center}
+\end{figure}
+
+
 
 \bibliographystyle{IEEEtran}
 \footnotesize{\bibliography{report}}

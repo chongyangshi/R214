@@ -1,0 +1,35 @@
+More and Thuente's:
+Performance by label (#match, #model, #ref) (precision, recall, F1):
+    B-Chemical: (3728, 4042, 5347) (0.9223, 0.6972, 0.7941)
+    O: (102191, 106345, 103389) (0.9609, 0.9884, 0.9745)
+    B-Disease: (2831, 3385, 4244) (0.8363, 0.6671, 0.7422)
+    I-Disease: (1727, 2298, 2725) (0.7515, 0.6338, 0.6876)
+    I-Chemical: (1113, 1383, 1748) (0.8048, 0.6367, 0.7110)
+Macro-average precision, recall, F1: (0.855177, 0.724635, 0.781873)
+Item accuracy: 111590 / 117453 (0.9501)
+Instance accuracy: 2250 / 4579 (0.4914)
+Elapsed time: 0.772134 [sec] (5930.3 [instance/sec])
+
+Backtracking method with regular Wolfe condition:
+Performance by label (#match, #model, #ref) (precision, recall, F1):
+    B-Chemical: (3728, 4042, 5347) (0.9223, 0.6972, 0.7941)
+    O: (102190, 106352, 103389) (0.9609, 0.9884, 0.9744)
+    B-Disease: (2825, 3382, 4244) (0.8353, 0.6656, 0.7409)
+    I-Disease: (1725, 2294, 2725) (0.7520, 0.6330, 0.6874)
+    I-Chemical: (1113, 1383, 1748) (0.8048, 0.6367, 0.7110)
+Macro-average precision, recall, F1: (0.855044, 0.724203, 0.781558)
+Item accuracy: 111581 / 117453 (0.9500)
+Instance accuracy: 2247 / 4579 (0.4907)
+Elapsed time: 0.744261 [sec] (6152.4 [instance/sec])
+
+Backtracking method with strong Wolfe condition:
+Performance by label (#match, #model, #ref) (precision, recall, F1):
+    B-Chemical: (3728, 4042, 5347) (0.9223, 0.6972, 0.7941)
+    O: (102189, 106349, 103389) (0.9609, 0.9884, 0.9744)
+    B-Disease: (2827, 3385, 4244) (0.8352, 0.6661, 0.7411)
+    I-Disease: (1725, 2294, 2725) (0.7520, 0.6330, 0.6874)
+    I-Chemical: (1113, 1383, 1748) (0.8048, 0.6367, 0.7110)
+Macro-average precision, recall, F1: (0.855018, 0.724296, 0.781605)
+Item accuracy: 111582 / 117453 (0.9500)
+Instance accuracy: 2249 / 4579 (0.4912)
+Elapsed time: 0.714180 [sec] (6411.5 [instance/sec])
