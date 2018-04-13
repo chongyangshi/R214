@@ -46,7 +46,7 @@
 {\normalfont\large\bfseries}{\thesection}{1em}{}
 \titleformat{\subsection}
 {\normalfont\normalsize\bfseries}{\thesubsection}{1em}{}
-\title{\vspace{-1cm}Biomedical Information Processing (R214): main assignment report}
+\title{\vspace{-1cm}Biomedical Information Processing (R214): Main Assignment}
 \author{Chongyang Shi \emph{(cs940)}}
 \date{\today}							
 \begin{document}
@@ -107,7 +107,7 @@ I-Chemical  & 0.6665 & 0.5720 & 0.5920 & 0.6662 & 0.6654 & \textbf{0.6782} & \te
 \end{center}
 \end{figure}
 
-Surprisingly, for chemicals at the beginning of entities (B-Chemcal), the precision (correct tags among those tagged) increased substantially when the surface form word feature is ablated. Ablating only the surface forms of before and after tokens (-1/1) produced slightly higher precision than ablating the entire surface form trigram. This is however accompanied by substantially reduced precisions on all other named entity classes, as well as reduced recall rate (correct tags among all relevant inputs that can be tagged) nearly across the board. As B-chemicals already bear a fairly high precision (91.78\%), it is not advisable to ablate the surface forms in exchange for lowering recall into the 50\%s. 
+Surprisingly, for chemicals at the beginning of entities (B-Chemcal), the precision (correct tags among those tagged) increased substantially when the surface form word feature is ablated. Ablating only the surface forms of before and after tokens (-1/1) produced slightly higher precision than ablating the entire surface form trigram. This is however accompanied by substantially reduced precisions on all other named entity classes, as well as reduced recall rate (correct tags among all relevant inputs that can be tagged) nearly across the board. As B-chemicals already bear a fairly high precision (91.78\%), it is not advisable to ablate the surface forms and reduce recall into the 50\% range. 
 
 Ablation of the lemma (base word) and the phonetic coding ($soundex$) yielded minimal improvements to precisions on some named entity groups but minimal reductions on others. Recall rates all reduced by very small margins. Based on a generally negative outlook on the $F_1$-scores (combined metric of precision and recall), it is advisable not to alate either of he two features.
 
@@ -156,7 +156,7 @@ While the precision of B-Chemical tagging continues to follow the declining tren
 
 The L-BFGS training algorithm used in entity recognition uses L2 regularization, which is normally more efficient than L1 \cite{cortes20092}, with a regularization parameter influencing the levels of bias and overfitting. Various values around the default $c2 = 1$ were tested, with broadly similar trends in variations of precision, recall, and $F_1$-score in individual named entities. Therefore, only the macro-average metrics from tagging the \emph{devel} dataset with a model trained on each value of $c2$ are plotted in Figure \ref{fig:c2}.
 
- \begin{figure}[h]
+\begin{figure}[h]
 \begin{center}
 \begin{tikzpicture}
 \begin{axis}[
@@ -219,6 +219,29 @@ I-Chemical  & 0.8048 & 0.6367 & 0.7110 & 0.8048 & 0.6367 & 0.7110 & 0.8048 & 0.6
 \caption{\label{fig:linesearch} Resulting tagging performance on the \emph{devel} dataset with different line search algorithms: More and Thuente's method, backtracking method with regular Wolfe condition, and backtracking method with strong Wolfe condition.}
 \end{center}
 \end{figure}
+
+\subsection{Evaluate the improved model on the test set}
+
+To summarise, the changes made on the baseline entity recognizer include the ablation of chunk information from the feature set during feature extraction; expanding lemma, part-of-speech, and phonetic coding ($soundex$) features from unigrams into trigrams (covering feature information of entities before and after the current word); as well as adjusting L-BFGS' $c2$ regularization parameter to 0.25. A comparison between the improved model and the original model is shown in Figure \ref{fig:improved-compare}.
+
+\begin{figure}[h]
+\begin{center}
+\fontsize{9}{11}\selectfont
+\begin{tabular}{|*{7}{c|}|c|}\hline
+\textbf{Model}  & \multicolumn{3}{c|}{\textbf{Improved}} & \multicolumn{3}{c||}{\textbf{Original}} & \emph{Change} \\ \hline 
+\textbf{Entity Class} & Precision & Recall & $F_1$-score & Precision & Recall & $F_1$-score & $F_1$-score \\ \hline
+B-Chemical & 0.9168 & 0.6771 & 0.7789 & 0.9085 & 0.6457 & 0.7549 & +3.18\% \\ \hline
+O                 & 0.9619 & 0.9890 & 0.9753 & 0.9576 & 0.9882 & 0.9726 & +0.28\% \\ \hline
+B-Disease   & 0.8218 & 0.6514 & 0.7268 & 0.8217 & 0.5895 & 0.6865 & +5.87\% \\ \hline
+I-Disease    & 0.7522 & 0.6434 & 0.6936 & 0.7311 & 0.6178 & 0.6697 & +3.57\% \\ \hline
+I-Chemical  & 0.7998 & 0.6087 & 0.6913 & 0.7438 & 0.6081 & 0.6691 & +3.32\% \\ \hline
+\textbf{Macro-average} & 0.8505 & 0.7139 & 0.7732 & 0.8325 & 0.6899 & 0.7506 & +3.01\% \\ \hline
+\end{tabular}
+\caption{\label{fig:improved-compare} A comparison between the improved model and the original entity recognition model on tagging performance on the \emph{test} dataset.}
+\end{center}
+\end{figure}
+
+Changes made to features and L-BFGS parameters resulted in a model which yields improved precision and recall across the board. Combining the metrics of precision and recall, changes in $F_1$-scores are shown on the right of Figure \ref{fig:improved-compare}. The already high-precision and high-recall terms outside entities received the least improvement, while disease terms at the start of entities benefited the most from the improved model. More than 3\% of improvements were made to all other named entity classes and the macro-average. Based on these results from testing on the unseen \emph{test} input dataset, I believe it is reasonably conclusive that the improved model is superior to the original in entity recognition of environment and disease terms.
 
 
 
