@@ -47,12 +47,7 @@ if current_sentence != []:
     sentences.append(current_sentence)
 
 # Then, within each sentence, annotate and match segments assembling entities.
-test = 0
 for sentence in sentences:
-
-    test += 1
-    if test > 50:
-        break
 
     current_entity_surface = ""
     current_entity = []

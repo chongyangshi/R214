@@ -275,9 +275,29 @@ These two errors highlight the need of reassembling neighbouring terms belonging
 {2} acute tubular necrosis (Score: 86)
 \end{lstlisting}
 
-While the enzyme is still not matched by an appropriate term in the dictionary, ``acute tubular necrosis'' is now a very good biomedical description of ``tubular damage'' in the original text. This demonstrates the improvement in approximate string matching quality by applying reassembly.
+While the enzyme is still not matched by an appropriate term in the dictionary (likely simply does not exist), ``acute tubular necrosis'' is now a very good biomedical description of ``tubular damage'' in the original text. This demonstrates the improvement in approximate string matching quality by applying reassembly.
 
+Overall, the grounding method with entity reassembly works fairly well, such as on the followed sentence:
+
+\begin{lstlisting}[breaklines]
+BACKGROUND : **Calcitriol ** {1} therapy suppresses serum levels of parathyroid hormone ( PTH ) in patients with **renal failure ** {2} but has several drawbacks , including **hypercalcemia ** {3} and / or marked suppression of bone turnover , which may lead to adynamic bone disease . 
+{1} Ca (Score: 90)
+{2} renal failure (Score: 100)
+{3} hypercalcemia (Score: 100)
+\end{lstlisting}
+
+While Calcitriol does not exist in the MESH dictionary, it does increase the body's intake of its closest match in the dictionary -- calcium (Ca). While this is mostly a lucky match due to the lack of a less relevant term with a shorter edit distance, similar processes of inferring terms through biomedical relations have already been applied elsewhere to improve grounding, such as utilising contrastive information between proteins \cite{kim2005biocontrasts}. More systematically, database and machine learning-aided inference can used to effectively construct knowledge base from unstructured biomedical information \cite{shin2015incremental}. In the above example, ``renal failure'' was also correctly matched with the corresponding term in the dictionary after entity reassembly before grounding.
+
+Some other issues do persist after entity reassembly, such as the lack of ability to match acronyms with their full base words:
+
+\begin{lstlisting}[breaklines]
+RESULTS : In Nx dogs , **OCT ** {1} significantly decreased serum PTH levels soon after the induction of **renal insufficiency ** {2} . 
+{1} methoctramine (Score: 90)
+{2} renal insufficiency (Score: 100)
+\end{lstlisting}
+
+From the original literature \cite{monier199922}, ``OCT'' refers to Oxacalcitriol, which while is nevertheless not in the dictionary, was incorrectly interpreted as methoctramine. 
 
 \bibliographystyle{IEEEtran}
-\footnotesize{\bibliography{report}}
+\bibliography{report}
 \end{document}  
