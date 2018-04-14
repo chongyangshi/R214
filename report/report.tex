@@ -54,7 +54,7 @@
 
 For the main course assignment, I am undertaking the second practical option (\textbf{1.2}): \emph{extracting chemical-disease associations from the biological literature}.
 
-\section{Improving the Conditional Random Fields named entity recognizer}
+\section{Improving the Conditional Random Fields named entity recognizer} \label{sec:a-crf-features}
 \subsection{Ablating features from the original feature set} \label{subsec:ablating}
 
 Based on the default \emph{n}-gram feature set in the feature extraction script, the script was modified to ablate each feature in turn. To provide a better understanding of the effects by offsets of surface form words, all surface forms of words within an offset of 1 (the trigram) were knocked out from the templates first, then just the surface forms of words before and after the current word (-1/1). Other features including the lemma, phonetic coding ($soundex$), part-of-speech, and chunk in IOB2 notation of the current word only. The resulting precisions, recall rates, and $F_1$-scores from ablating each feature on the \emph{devel} dataset are presented separately in Figures \ref{fig:ablation1}, \ref{fig:ablation2}, and \ref{fig:ablation3}. For each named entity class as well as the overall average, with none-ablated as reference, improved performance due to ablation are presented in \textbf{bold}.
@@ -317,6 +317,26 @@ Histological examination on 9 of 10 mice with such **thrombocytopenia ** {1} sho
 \end{lstlisting}
 
 Myelodysplastic syndromes concern bone marrows, while Fanconi syndrome describes kidney conditions. With the nature of the conditions entirely changed, this result from grounding is entirely erroneous. Methods to better distinguish semantic compositions of compound words (``compound bracketing'') through unsupervised probabilistic models \cite{pecina2010lexical}, as well as CRF post-processing and lexicon/dictionary-supported normalization \cite{lee2016audis} have been developed to improve accuracies of grounding on compound words and multi-word nouns.
+
+\section{Identifying associations between disease and chemical mentions}
+
+The full abstract collection of PubMed texts on chemically induced disorders numbered 301,084,933 lines, with words already processed into a format identical to those used in Section \ref{sec:a-crf-features}. With reference named entity classes available for each surface word, I applied the same feature template and L-BFGS training configurations of the improved entity recognition model from Section \ref{sec:a-crf-features}, and split the abstract collection at breaks (empty lines) between sentences, as described in Figure \ref{fig:pubmed-segments} into three datasets: \emph{training}, \emph{validation}, \emph{testing}. The first dataset will be used to train the CRF tagger, whose performance will be validated on the second dataset. Tags applied by the trained model on the last dataset will be used for the rest of the experiments.
+
+\begin{figure}[h]
+\begin{center}
+\fontsize{9}{11}\selectfont
+\begin{tabular}{|*{8}{c|}}\hline
+Dataset & Number of Lines & Approx. Number of Sentences \\ \hline
+\emph{training} & 50,180,846 & 1,757,828  \\ \hline
+\emph{validation} & 50,180,840 & 1,726,773  \\ \hline
+\emph{testing} & 200,723,247 & 7,089,377 \\ \hline
+\textbf{Total} & 301,084,933 & 10,573,978 \\ \hline
+\end{tabular}
+\caption{\label{fig:pubmed-segments} The approximate of words (and empty lines between sentences) in the three datasets after splitting.}
+\end{center}
+\end{figure}
+
+
 
 \bibliographystyle{IEEEtran}
 \small{\bibliography{report}}
