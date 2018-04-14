@@ -243,7 +243,9 @@ I-Chemical  & 0.7998 & 0.6087 & 0.6913 & 0.7438 & 0.6081 & 0.6691 & +3.32\% \\ \
 
 Changes made to features and L-BFGS parameters resulted in a model which yields improved precision and recall across the board. Combining the metrics of precision and recall, changes in $F_1$-scores are shown on the right of Figure \ref{fig:improved-compare}. The already high-precision and high-recall terms outside entities received the least improvement, while disease terms at the start of entities benefited the most from the improved model. More than 3\% of improvements were made to all other named entity classes and the macro-average. Based on these results from testing on the unseen \emph{test} input dataset, I believe it is reasonably conclusive that the improved model is superior to the original in entity recognition of environment and disease terms.
 
+\section{Grounding named entities through approximate string matching}
 
+The MESH concept dictionary provides terms for two classes of entities: chemicals and diseases. Based on the class of entity determined by the improved entity recognition model from the previous section, all possible choices of the specified class in the MESH dictionary were supplied to the approximate string matching process facilitated by the \verb|fuzzywuzzy| \cite{fuzzywuzzy} library. Best matching dictionary terms were grouped by their original sentences, which were annotated with their respective matched terms in output.
 
 \bibliographystyle{IEEEtran}
 \footnotesize{\bibliography{report}}
