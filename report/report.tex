@@ -288,16 +288,25 @@ BACKGROUND : **Calcitriol ** {1} therapy suppresses serum levels of parathyroid 
 
 While Calcitriol does not exist in the MESH dictionary, it does increase the body's intake of its closest match in the dictionary -- calcium (Ca). While this is mostly a lucky match due to the lack of a less relevant term with a shorter edit distance, similar processes of inferring terms through biomedical relations have already been applied elsewhere to improve grounding, such as utilising contrastive information between proteins \cite{kim2005biocontrasts}. More systematically, database and machine learning-aided inference can used to effectively construct knowledge base from unstructured biomedical information \cite{shin2015incremental}. In the above example, ``renal failure'' was also correctly matched with the corresponding term in the dictionary after entity reassembly before grounding.
 
-Some other issues do persist after entity reassembly, such as the lack of ability to match acronyms with their full base words:
+Some other issues do persist after entity reassembly, such as the lack of ability to match complex acronyms with their full base words:
 
 \begin{lstlisting}[breaklines]
+(Simple acronyms)
+CBA / **Ca ** {1} male mice started on **AZT ** {2} 0 . 75 mg / ml **H2O ** {3} at 84 days of age and kept on it for 687 days when dosage reduced to 0 . 5 mg / ml **H2O ** {4} for a group , another group removed from **AZT ** {5} to see recovery , and third group remained on 0 . 75 mg . 
+{1} Ca (Score: 100)
+{2} AZT (Score: 100)
+{3} H2O (Score: 100)
+{4} H2O (Score: 100)
+{5} AZT (Score: 100)
+
+(Complex, lesser-known acronyms)
 RESULTS : In Nx dogs , **OCT ** {1} significantly decreased serum PTH levels soon after the induction of **renal insufficiency ** {2} . 
 {1} methoctramine (Score: 90)
 {2} renal insufficiency (Score: 100)
 \end{lstlisting}
 
-From the original literature \cite{monier199922}, ``OCT'' refers to Oxacalcitriol, which while is nevertheless not in the dictionary, was incorrectly interpreted as methoctramine. 
+From the original literature \cite{monier199922}, ``OCT'' refers to Oxacalcitriol, which while is nevertheless not in the dictionary, was incorrectly interpreted as methoctramine. It is possible to resolve most acronyms into canonical forms through fixed or machine learning-established rules based on ontology knowledge \cite{naderi2011organismtagger}.
 
 \bibliographystyle{IEEEtran}
-\bibliography{report}
+\small{\bibliography{report}}
 \end{document}  

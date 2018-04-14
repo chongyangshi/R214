@@ -2,6 +2,8 @@
 
 import os, sys
 import argparse
+from multiprocessing import Pool
+from itertools import product
 from fuzzywuzzy import process
 
 import utils
@@ -47,8 +49,10 @@ if current_sentence != []:
     sentences.append(current_sentence)
 
 # Then, within each sentence, annotate and match segments assembling entities.
-for sentence in sentences:
+# Parallised with horrible code here.
+def process_sentence(sentence):
 
+    result = ""
     current_entity_surface = ""
     current_entity = []
     current_entity_class = ""
@@ -103,11 +107,23 @@ for sentence in sentences:
         sentence_out += "**" + current_entity_surface + "** {" + str(current_reference) + "} "
         grounded_terms.append((current_reference, match[0], match[1]))
 
-    print(sentence_out)
+    result = ""
+    result += sentence_out + "\n"
     for i, t, s in grounded_terms:
-        print("{" + str(i) + "} " + t + " (Score: " + str(s) + ")")
-    print("")
+        result += "{" + str(i) + "} " + t + " (Score: " + str(s) + ")\n"
+    result += "\n"
 
+    return result
+
+outputs = len(sentences)
+output = ["" for i in range(outputs)]
+pool = Pool()
+chunksize = 50
+for ind, result in enumerate(pool.map(process_sentence, sentences, chunksize)):
+    output[ind] = result
+
+for result in output:
+    print(result)
 print("\n")
 print("(End of grounding.)")
         
