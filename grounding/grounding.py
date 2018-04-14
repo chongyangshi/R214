@@ -32,46 +32,86 @@ if len(dictionary) == 0:
 chemical_choices = [i[0] for i in dictionary if i[1].lower() == "chemical"]
 disease_choices = [i[0] for i in dictionary if i[1].lower() == "disease"]
 
-words = []
-current_sentence = ""
-current_grounded_terms = []
-current_reference = 0
+# First, organise original inputs back into sentences.
+sentences = []
+current_sentence = []
+# Information collected: (word, lemma, recognised_tag)
 for i, word in enumerate(original):
-
     if len(word) < 6:
-        # It is an empty line signalling a new sentence.
-        print(current_sentence)
-        for i, t, s in current_grounded_terms:
-            print("[" + str(i) + "] " + t + " (Score: " + str(s) + ")")
-        current_reference = 0
-        current_sentence = ""
-        current_grounded_terms = []
-        print("\n")
-        continue
-        
-    # Exclude those outside recognised entities.
-    if 'chemical' not in tags[i].lower() and 'disease' not in tags[i].lower():
-        current_sentence += " " + word[0]
-        continue
-
-    # Find the best match from chemical choices.
-    elif 'chemical' in tags[i].lower():
-        best_match = process.extractOne(word[1], chemical_choices)
-    
-    # Find the best match from disease choices.
+        sentences.append(current_sentence)
+        current_sentence = []
     else:
-        best_match = process.extractOne(word[1], disease_choices)
-    
-    # Record groundings of recognised terms.
-    current_reference += 1
-    current_sentence += " *" + word[0] + "*[" + str(current_reference) + "]"
-    current_grounded_terms.append((current_reference, best_match[0], best_match[1]))
+        current_sentence.append((word[0], word[1], tags[i]))
 
-# Sort out the last bit.
-if len(current_sentence) > 0:
-    print(current_sentence)
-    for i, t, s in current_grounded_terms:
-        print("[" + str(i) + "] " + t + " (Score: " + str(s) + ")")
+if current_sentence != []:
+    sentences.append(current_sentence)
+
+# Then, within each sentence, annotate and match segments assembling entities.
+test = 0
+for sentence in sentences:
+
+    test += 1
+    if test > 50:
+        break
+
+    current_entity_surface = ""
+    current_entity = []
+    current_entity_class = ""
+    grounded_terms = []
+    sentence_out = ""
+    current_reference = 0
+
+    for word in sentence:
+        tag = word[2].strip().lower()
+        
+        # The end of the previous entity.
+        if tag.startswith("b") or tag.startswith("o"):
+            if len(current_entity) > 0:
+                # Match and output this assembled entity.
+                assembled_entity = " ".join(current_entity)
+                if current_entity_class == "chemical":
+                    match = process.extractOne(assembled_entity, chemical_choices)
+                else:
+                    match = process.extractOne(assembled_entity, disease_choices)
+                current_reference += 1
+                sentence_out += "**" + current_entity_surface + "** {" + str(current_reference) + "} "
+                grounded_terms.append((current_reference, match[0], match[1]))
+            
+            # Clear current states
+            current_entity_surface = ""
+            current_entity = []
+            current_entity_class = ""
+
+            if tag.startswith("b"):
+                if "chemical" in tag:
+                    current_entity_class = "chemical"
+                else:
+                    current_entity_class = "disease"
+                current_entity_surface += word[0] + " "
+                current_entity.append(word[1])
+            else:
+                sentence_out += word[0] + " "
+        
+        elif tag.startswith("i"):
+            current_entity_surface += word[0] + " "
+            current_entity.append(word[1])
+        
+
+    if len(current_entity) > 0:
+        # Match and output the last assembled entity.
+        assembled_entity = " ".join(current_entity)
+        if current_entity_class == "chemical":
+            match = process.extractOne(assembled_entity, chemical_choices)
+        else:
+            match = process.extractOne(assembled_entity, disease_choices)
+        current_reference += 1
+        sentence_out += "**" + current_entity_surface + "** {" + str(current_reference) + "} "
+        grounded_terms.append((current_reference, match[0], match[1]))
+
+    print(sentence_out)
+    for i, t, s in grounded_terms:
+        print("{" + str(i) + "} " + t + " (Score: " + str(s) + ")")
+    print("")
 
 print("\n")
 print("(End of grounding.)")

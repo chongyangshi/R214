@@ -245,7 +245,38 @@ Changes made to features and L-BFGS parameters resulted in a model which yields 
 
 \section{Grounding named entities through approximate string matching}
 
-The MESH concept dictionary provides terms for two classes of entities: chemicals and diseases. Based on the class of entity determined by the improved entity recognition model from the previous section, all possible choices of the specified class in the MESH dictionary were supplied to the approximate string matching process facilitated by the \verb|fuzzywuzzy| \cite{fuzzywuzzy} library. Best matching dictionary terms were grouped by their original sentences, which were annotated with their respective matched terms in output.
+The MESH concept dictionary provides terms for two classes of entities: chemicals and diseases. Based on the class of entity determined by the improved entity recognition model from the previous section, all possible choices of the specified class in the MESH dictionary were supplied to the approximate string matching process facilitated by the \verb|fuzzywuzzy| \cite{fuzzywuzzy} library. With the initial approach, best matching dictionary terms were grouped by their original sentences, which were annotated with their respective matched terms in output.
+
+Unfortunately, this initial approach clearly appeared to be inadequate due to the lack of connecting recognised terms belonging to a continuous entity:
+
+\begin{lstlisting}[breaklines]
+**Urine**{1} **N**{2} **-**{3} **acetyl**{4} **-**{5} **beta**{6} **-**{7} **D**{8} **-**{9} **glucosaminidase**{10} - - a marker of **tubular**{11} **damage**{12} ?
+{1} purine (Score: 91)
+{2} alanine (Score: 90)
+{3} 11-deoxycortisol (Score: 0)
+{4} 2-acetylaminofluorene (Score: 90)
+{5} 11-deoxycortisol (Score: 0)
+{6} 17beta-estradiol (Score: 90)
+{7} 11-deoxycortisol (Score: 0)
+{8} 1,2-DMH (Score: 90)
+{9} 11-deoxycortisol (Score: 0)
+{10} AMI (Score: 90)
+{11} acute tubular necrosis (Score: 90)
+{12} axonal damage (Score: 90)
+\end{lstlisting}
+
+The first ten terms in the above sentence included in the \emph{devel} dataset are designated as being outside a named entity class (``O''), but mis-recognised by the entity recognition model as a chemical spanning across multiple terms (in fact, the assembled term is an enzyme, which can be counted as a chemical but not considered as such by the dataset's context). The result of the fragmented individual approximate string matching process is a long list of poor matches annotated. Similarly, the fragmentation of ``tabular'' and ``damage'' caused them to be individually (and inaccurately) matched with individual terms in the dictionary.
+
+These two errors highlight the need of reassembling neighbouring terms belonging to the same entity before attempting approximate string matching. Therefore, the grounding process was modified to first reassemble these neighbouring terms together (e.g. from ``... + $O$ + $B-Chemical$ + $I-Chemical$ + $I-Chemical$ +  $O$ + ...'' to ``... + $O$ + $Chemical$ +  $O$ + ...'') before matching the assembled term with the best approximation in the dictionary. The above example now becomes:
+
+\begin{lstlisting}[breaklines]
+**Urine N - acetyl - beta - D - glucosaminidase ** {1} - - a marker of **tubular damage ** {2} ? 
+{1} 9-[[2-methoxy-4-[(methylsulphonyl)amino]phenyl]amino] -N,5-dimethyl- 4-acridinecarboxamide (Score: 86)
+{2} acute tubular necrosis (Score: 86)
+\end{lstlisting}
+
+While the enzyme is still not matched by an appropriate term in the dictionary, ``acute tubular necrosis'' is now a very good biomedical description of ``tubular damage'' in the original text. This demonstrates the improvement in approximate string matching quality by applying reassembly.
+
 
 \bibliographystyle{IEEEtran}
 \footnotesize{\bibliography{report}}
