@@ -12,11 +12,16 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--dictionary", help="A tab separated file containing terms to be grounded to.", default="./CDR_MeSH.tsv")
 parser.add_argument("-t", "--tags", help="A text file containing corresponding entity recognition tags on each line.")
 parser.add_argument("-i", "--input", help="A tab separated file containing original terms before entity recognition.")
+parser.add_argument("-o", "--output", help="The optional path to which a file containing grounded terms in each sentence will be written.", default="_")
 args = parser.parse_args()
 
 if any([i is None for i in [args.tags, args.input, args.dictionary]]):
     parser.print_help()
     sys.exit(1)
+
+output_file = None
+if args.output != "_" and utils.get_write_path(args.output):
+    output_file = utils.get_write_path(args.output)
 
 tags = utils.read_tags(args.tags)
 original = utils.parse_tsv(args.input)
@@ -31,8 +36,8 @@ if len(dictionary) == 0:
     sys.exit(1)
 
 # Build the disease and chemical dictionary choices separately.
-chemical_choices = [i[0] for i in dictionary if i[1].lower() == "chemical"]
-disease_choices = [i[0] for i in dictionary if i[1].lower() == "disease"]
+chemical_choices = {i[2]: i[0] for i in dictionary if i[1].lower() == "chemical"}
+disease_choices = {i[2]: i[0] for i in dictionary if i[1].lower() == "disease"}
 
 # First, organise original inputs back into sentences.
 sentences = []
@@ -57,6 +62,7 @@ def process_sentence(sentence):
     current_entity = []
     current_entity_class = ""
     grounded_terms = []
+    grounded_terms_ids = []
     sentence_out = ""
     current_reference = 0
 
@@ -75,6 +81,7 @@ def process_sentence(sentence):
                 current_reference += 1
                 sentence_out += "**" + current_entity_surface + "** {" + str(current_reference) + "} "
                 grounded_terms.append((current_reference, match[0], match[1]))
+                grounded_terms_ids.append(match[2])
             
             # Clear current states
             current_entity_surface = ""
@@ -106,6 +113,7 @@ def process_sentence(sentence):
         current_reference += 1
         sentence_out += "**" + current_entity_surface + "** {" + str(current_reference) + "} "
         grounded_terms.append((current_reference, match[0], match[1]))
+        grounded_terms_ids.append(match[2])
 
     result = ""
     result += sentence_out + "\n"
@@ -113,19 +121,27 @@ def process_sentence(sentence):
         result += "{" + str(i) + "} " + t + " (Score: " + str(s) + ")\n"
     result += "\n"
 
-    return result
+    return result, ','.join(grounded_terms_ids)
 
 outputs = len(sentences)
 output = ["" for i in range(outputs)]
+output_ids = ["" for i in range(outputs)]
 pool = Pool()
 chunksize = 50
 for ind, result in enumerate(pool.map(process_sentence, sentences, chunksize)):
-    output[ind] = result
+    output[ind], output_ids[ind] = result
 
 for result in output:
     print(result)
 print("\n")
 print("(End of grounding.)")
+
+if output_file:
+    with open(output_file, 'w+') as out_file:
+        for i in output_ids:
+            out_file.write(i + "\n")
+
+
         
 
 

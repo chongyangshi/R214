@@ -8,6 +8,21 @@ def get_full_path(file_path):
     return path.abspath(path.expanduser(file_path))
 
 
+def get_write_path(file_path):
+    """
+    Given the path to a non-existent file, returns the full path to write by
+    expanding any user prefixes. 
+    """
+
+    directory = path.dirname(file_path)
+    full_dir = path.abspath(path.expanduser(directory))
+
+    if not path.isdir(full_dir):
+        return None
+
+    return path.join(full_dir, path.basename(file_path))
+
+
 def parse_tsv(input_tsv):
     """
     Open and parse a tab separated file at `input_tsv.` Return 
