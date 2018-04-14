@@ -307,6 +307,17 @@ RESULTS : In Nx dogs , **OCT ** {1} significantly decreased serum PTH levels soo
 
 From the original literature \cite{monier199922}, ``OCT'' refers to Oxacalcitriol, which while is nevertheless not in the dictionary, was incorrectly interpreted as methoctramine. It is possible to resolve most acronyms into canonical forms through fixed or machine learning-established rules based on ontology knowledge \cite{naderi2011organismtagger}.
 
+Finally, common proportions of biomedical compound words and multi-word nouns can lead to incorrect groundings of tagged terms when a direct match a dictionary compound word does not occur. For example:
+
+\begin{lstlisting}[breaklines]
+Histological examination on 9 of 10 mice with such **thrombocytopenia ** {1} showed changes compatible with **myelodysplastic syndrome ** {2} ( **MDS ** {3} ) . 
+{1} thrombocytopenia (Score: 100)
+{2} Fanconi syndrome (Score: 86)
+{3} DES (Score: 67)
+\end{lstlisting}
+
+Myelodysplastic syndromes concern bone marrows, while Fanconi syndrome describes kidney conditions. With the nature of the conditions entirely changed, this result from grounding is entirely erroneous. Methods to better distinguish semantic compositions of compound words (``compound bracketing'') through unsupervised probabilistic models \cite{pecina2010lexical}, as well as CRF post-processing and lexicon/dictionary-supported normalization \cite{lee2016audis} have been developed to improve accuracies of grounding on compound words and multi-word nouns.
+
 \bibliographystyle{IEEEtran}
 \small{\bibliography{report}}
 \end{document}  
