@@ -320,22 +320,7 @@ Myelodysplastic syndromes concern bone marrows, while Fanconi syndrome describes
 
 \section{Identifying associations between disease and chemical mentions}
 
-The full abstract collection of PubMed texts on chemically induced disorders numbered 301,084,933 lines, with words already processed into a format identical to those used in Section \ref{sec:a-crf-features}. With reference named entity classes available for each surface word, I applied the same feature template and L-BFGS training configurations of the improved entity recognition model from Section \ref{sec:a-crf-features}, and split the abstract collection at breaks (empty lines) between sentences, as described in Figure \ref{fig:pubmed-segments} into three datasets: \emph{training}, \emph{validation}, \emph{testing}. The first dataset will be used to train the CRF tagger, whose performance will be validated on the second dataset. Tags applied by the trained model on the last dataset will be used for the rest of the experiments.
-
-\begin{figure}[h]
-\begin{center}
-\fontsize{9}{11}\selectfont
-\begin{tabular}{|*{8}{c|}}\hline
-Dataset & Number of Lines & Approx. Number of Sentences \\ \hline
-\emph{training} & 50,180,846 & 1,757,828  \\ \hline
-\emph{validation} & 50,180,840 & 1,726,773  \\ \hline
-\emph{testing} & 200,723,247 & 7,089,377 \\ \hline
-\textbf{Total} & 301,084,933 & 10,573,978 \\ \hline
-\end{tabular}
-\caption{\label{fig:pubmed-segments} The approximate of words (and empty lines between sentences) in the three datasets after splitting.}
-\end{center}
-\end{figure}
-
+The full abstract collection of PubMed texts on chemically induced disorders numbered 301,084,933 lines, with words already processed into a format identical to those used in Section \ref{sec:a-crf-features}. With reference named entity classes unavailable for each surface word (defaulting to outside entities), the improved entity recognition model from Section \ref{sec:a-crf-features} was used to perform entity recognition on a total of 301,084,933 surface words from approximately 10,573,978 sentences.
 
 
 \bibliographystyle{IEEEtran}
