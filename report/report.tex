@@ -275,7 +275,7 @@ These two errors highlight the need of reassembling neighbouring terms belonging
 {2} acute tubular necrosis (Score: 86)
 \end{lstlisting}
 
-While the enzyme is still not matched by an appropriate term in the dictionary (likely simply does not exist), ``acute tubular necrosis'' is now a very good biomedical description of ``tubular damage'' in the original text. This demonstrates the improvement in approximate string matching quality by applying reassembly.
+While the enzyme is still not matched by an appropriate term in the dictionary (likely simply does not exist), with reassembly applied, ``acute tubular necrosis'' is now a very good biomedical description of ``tubular damage'' in the original text. To further resolve the lack of dictionary coverage over complex chemical constructs, efficient co-occurrence-based concept associations \cite{tsuruoka2008facta} could aid the grounding system in finding the best-matching entity based on functional groups in the term. 
 
 Overall, the grounding method with entity reassembly works fairly well, such as on the followed sentence:
 
@@ -286,7 +286,7 @@ BACKGROUND : **Calcitriol ** {1} therapy suppresses serum levels of parathyroid 
 {3} hypercalcemia (Score: 100)
 \end{lstlisting}
 
-While Calcitriol does not exist in the MESH dictionary, it does increase the body's intake of its closest match in the dictionary -- calcium (Ca). While this is mostly a lucky match due to the lack of a less relevant term with a shorter edit distance, similar processes of inferring terms through biomedical relations have already been applied elsewhere to improve grounding, such as utilising contrastive information between proteins \cite{kim2005biocontrasts}. More systematically, database and machine learning-aided inference can used to effectively construct knowledge base from unstructured biomedical information \cite{shin2015incremental}. In the above example, ``renal failure'' was also correctly matched with the corresponding term in the dictionary after entity reassembly before grounding.
+While Calcitriol does not exist in the MESH dictionary, it does increase the body's intake of its closest match in the dictionary -- calcium (Ca). Although this is mostly a lucky match due to the lack of a less relevant term with a shorter edit distance, similar processes of inferring terms through biomedical relations have already been applied elsewhere to improve grounding, such as utilising contrastive information between proteins \cite{kim2005biocontrasts}. More systematically, machine learning-based inference systems trained on biomedical databases can used to effectively construct knowledge base from unstructured biomedical information \cite{shin2015incremental}. In the above example, ``renal failure'' was also correctly matched with the corresponding term in the dictionary after entity reassembly before grounding.
 
 Some other issues do persist after entity reassembly, such as the lack of ability to match complex acronyms with their full base words:
 
@@ -305,7 +305,7 @@ RESULTS : In Nx dogs , **OCT ** {1} significantly decreased serum PTH levels soo
 {2} renal insufficiency (Score: 100)
 \end{lstlisting}
 
-From the original literature \cite{monier199922}, ``OCT'' refers to Oxacalcitriol, which while is nevertheless not in the dictionary, was incorrectly interpreted as methoctramine. It is possible to resolve most acronyms into canonical forms through fixed or machine learning-established rules based on ontology knowledge \cite{naderi2011organismtagger}.
+From the original literature \cite{monier199922}, ``OCT'' refers to Oxacalcitriol, which while nevertheless not in the dictionary, was incorrectly interpreted as methoctramine. It is possible to resolve most acronyms into canonical forms through fixed or dynamic rules based on ontology knowledge \cite{naderi2011organismtagger}.
 
 Finally, common proportions of biomedical compound words and multi-word nouns can lead to incorrect groundings of tagged terms when a direct match a dictionary compound word does not occur. For example:
 
@@ -316,7 +316,15 @@ Histological examination on 9 of 10 mice with such **thrombocytopenia ** {1} sho
 {3} DES (Score: 67)
 \end{lstlisting}
 
-Myelodysplastic syndromes concern bone marrows, while Fanconi syndrome describes kidney conditions. With the nature of the conditions entirely changed, this result from grounding is entirely erroneous. Methods to better distinguish semantic compositions of compound words (``compound bracketing'') through unsupervised probabilistic models \cite{pecina2010lexical}, as well as CRF post-processing and lexicon/dictionary-supported normalization \cite{lee2016audis} have been developed to improve accuracies of grounding on compound words and multi-word nouns.
+Myelodysplastic syndromes concern bone marrows, while Fanconi syndrome describes kidney conditions. With the nature of the conditions entirely changed, this result from grounding is entirely erroneous. Methods to better distinguish semantic compositions of compound words (``compound bracketing'') through unsupervised probabilistic models \cite{pecina2010lexical}, as well as CRF post-processing and lexicon/dictionary-supported normalization \cite{lee2016audis} have been developed to improve accuracy when grounding compound words and multi-word nouns.
+
+In general, a further improved grounding system may have the following features:
+\begin{itemize}
+	\item Co-occurrence-based concept associations that can be queried efficiently \cite{tsuruoka2008facta} are used to find best-matching entities of complex chemical constructs if a direct match is not possible;
+	\item For sources containing unstructured biomedical information, databases storing relational information \cite{kim2005biocontrasts} between entities are used to train inference agents \cite{shin2015incremental} to better resolve terms without a direct match;
+	\item To resolve uncommon acronyms that are not present in the dictionary, rules generated from ontology databases are applied to resolve the acronyms into canonical forms \cite{naderi2011organismtagger}, which are more likely to encounter good matches during grounding;
+	\item Unsupervised probabilistic models \cite{pecina2010lexical} and CRF-based normalization algorithms \cite{lee2016audis} are used to improve accuracy when grounding on compound words and multi-word nouns.
+\end{itemize}
 
 \section{Identifying associations between disease and chemical mentions}
 
