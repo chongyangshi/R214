@@ -1,9 +1,9 @@
-# Script to ground tagged entities to dictionary entries.
+# Script to ground tagged entities to dictionary entries in a 
+# memory-friendly manner.
 
 import os, sys
 import argparse
 from multiprocessing import Pool
-from itertools import product
 from fuzzywuzzy import process
 
 import utils
