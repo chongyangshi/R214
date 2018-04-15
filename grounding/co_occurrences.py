@@ -40,20 +40,30 @@ while True:
 
     assoc = assoc.strip()
     if len(assoc) > 0:
-        elements = sorted([i.strip() for i in assoc.split(",")])
+
+        # Multiples of the same in a sentence are only counted once.
+        elements = sorted(list(set([i.strip() for i in assoc.split(",")])))
+
+        # Generate pairs.
         pairs = combinations(elements, 2)
+
+        # Tally total.
         total_lines += 1
+
         for pair in pairs:
 
+            # Individual occurrences
             for item in pair:
                 mentions[item] += 1
 
+            # If set, only consider pairs of chemical and disease.
             if MIXED_ONLY:
                 first_t = dictionary[pair[0]][1]
                 second_t = dictionary[pair[1]][1]
                 if first_t.lower() == second_t.lower():
                     continue
             
+            # Co-occurrences.
             associations[pair] += 1
 
 assoc_file.close()
@@ -90,8 +100,9 @@ for c in co_mentions:
     print("{} ({:0.5f}%) - {} ({}, {}) and {} ({}, {})".format(c[1], c[1]/total_lines, first, first_c, first_t, second, second_c, second_t))
 print("")
 
-# Calculated over lines with either or both chemical or disease occurrence, to
-# keep probabilities consistent.
+# Lines without any grounded entities are excluded from the total, while any line with
+# any grounded chemical or disease at all are counted, not requiring both types to appear.
+# This keeps probabilities consistent between chemical and disease entities.
 element_prob = {i: mentions[i] / total_lines for i in mentions}
 joint_prob = {i: associations[i] / total_lines for i in associations}
 pmi = {i: log(joint_prob[i] / (element_prob[i[0]] * element_prob[i[1]]), 2) for i in joint_prob}
