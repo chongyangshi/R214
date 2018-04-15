@@ -1,4 +1,5 @@
 from os import path
+from fuzzywuzzy import process
 
 def get_full_path(file_path):
     """
@@ -42,6 +43,18 @@ def parse_tsv(input_tsv):
     return parsed_data
 
 
+def open_file(input_file):
+    """
+    Open d file at `input_file.` Return the file object.
+    """
+
+    full_path = get_full_path(input_file)
+    if not path.isfile(full_path):
+        return False
+
+    return open(full_path, 'r')
+
+
 def read_tags(input_file):
     """
     Open and read a text file containing tags from entity recognition
@@ -59,3 +72,25 @@ def read_tags(input_file):
     parsed_data = [i.strip() for i in content]
 
     return parsed_data
+
+
+def make_sentences(words, tags):
+    """
+    Organise a 1-D list of words into a 2-D list of sentences, each
+    of which containing tuples of lemma and tag.
+    """
+
+    sentences = []
+    current_sentence = []
+    # Information collected: (lemma, recognised_tag)
+    for i, word in enumerate(words):
+        if len(word) < 6:
+            sentences.append(current_sentence)
+            current_sentence = []
+        else:
+            current_sentence.append((word[1], tags[i]))
+
+    if current_sentence != []:
+        sentences.append(current_sentence)
+
+    return sentences
