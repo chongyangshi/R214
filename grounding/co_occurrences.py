@@ -52,11 +52,12 @@ while True:
 
         for pair in pairs:
 
-            # Individual occurrences
+            # Individual occurrences.
             for item in pair:
                 mentions[item] += 1
 
             # If set, only consider pairs of chemical and disease.
+            # Dictionary composition: {id: (name, type), ...}
             if MIXED_ONLY:
                 first_t = dictionary[pair[0]][1]
                 second_t = dictionary[pair[1]][1]

@@ -1,5 +1,6 @@
 \documentclass[10pt, oneside]{article}   	
 \usepackage[left=25mm,top=25mm,right=25mm,bottom=25mm]{geometry}   
+\usepackage[toc,page]{appendix}
 \geometry{a4paper}
 \usepackage{algorithm,algpseudocode}  
 \usepackage{graphicx}
@@ -23,6 +24,7 @@
 \usepackage{color}
 \usepackage{diagbox}
 \usepackage[parfill]{parskip}
+\usepackage{pythonhighlight}
 \setlength{\headsep}{5pt}
 \graphicspath{ {images/} }
 \lstset{
@@ -307,7 +309,7 @@ RESULTS : In Nx dogs , **OCT ** {1} significantly decreased serum PTH levels soo
 
 From the original literature \cite{monier199922}, ``OCT'' refers to Oxacalcitriol, which while nevertheless not in the dictionary, was incorrectly interpreted as methoctramine. It is possible to resolve most acronyms into canonical forms through fixed or dynamic rules based on ontology knowledge \cite{naderi2011organismtagger}.
 
-Finally, common proportions of biomedical compound words and multi-word nouns can lead to incorrect groundings of tagged terms when a direct match a dictionary compound word does not occur. For example:
+Finally, common proportions of biomedical composite words and multi-word nouns can lead to incorrect groundings of tagged terms when a direct match with the dictionary vocabulary does not occur. For example:
 
 \begin{lstlisting}[breaklines]
 Histological examination on 9 of 10 mice with such **thrombocytopenia ** {1} showed changes compatible with **myelodysplastic syndrome ** {2} ( **MDS ** {3} ) . 
@@ -320,17 +322,35 @@ Myelodysplastic syndromes concern bone marrows, while Fanconi syndrome describes
 
 In general, a further improved grounding system may have the following features:
 \begin{itemize}
-	\item Co-occurrence-based concept associations that can be queried efficiently \cite{tsuruoka2008facta} are used to find best-matching entities of complex chemical constructs if a direct match is not possible;
+	\item Co-occurrence-based concept associations that can be queried efficiently \cite{tsuruoka2008facta} are used to find best-matching entities of complex chemical constructs if a direct match in vocabulary does not exist;
 	\item For sources containing unstructured biomedical information, databases storing relational information \cite{kim2005biocontrasts} between entities are used to train inference agents \cite{shin2015incremental} to better resolve terms without a direct match;
 	\item To resolve uncommon acronyms that are not present in the dictionary, rules generated from ontology databases are applied to resolve the acronyms into canonical forms \cite{naderi2011organismtagger}, which are more likely to encounter good matches during grounding;
-	\item Unsupervised probabilistic models \cite{pecina2010lexical} and CRF-based normalization algorithms \cite{lee2016audis} are used to improve accuracy when grounding on compound words and multi-word nouns.
+	\item Unsupervised probabilistic models \cite{pecina2010lexical} and CRF-based normalization algorithms \cite{lee2016audis} are used to improve accuracy when grounding compositions of terms.
 \end{itemize}
 
 \section{Identifying associations between disease and chemical mentions}
 
-The full abstract collection of PubMed texts on chemically induced disorders numbered 301,084,933 lines, with words already processed into a format identical to those used in Section \ref{sec:a-crf-features}. With reference named entity classes unavailable for each surface word (defaulting to outside entities), the improved entity recognition model from Section \ref{sec:a-crf-features} was used to perform entity recognition on a total of 301,084,933 surface words from approximately 10,573,978 sentences.
+The full abstract collection of PubMed texts on chemically induced disorders numbered 301,084,933 lines, with words already processed into a format identical to those used in Section \ref{sec:a-crf-features}. With reference named entity classes unavailable for each surface word (defaulting to outside entities), the improved entity recognition model from Section \ref{sec:a-crf-features} was used to perform entity recognition on a total of 301,084,933 surface words from 10,573,978 sentences. Tags generated through entity recognition were then cross-referenced with the original surface words and their lemmas for grounding, which was conducted in parallelised batches to reduce memory footprint. 
+
+With grounded entities grouped by the sentences they originated from, duplicate entities within the same sentence were removed, with the assumption that multiple mentions of a noun entity in the same sentence is primarily for clarity rather than emphasis \cite{cortes20092}. Grounded entities in the sentence were then sorted in alphanumeric order to preserve consistency in composing co-mention pairs. The mention of each entity in each sentence was recorded globally as an occurrence of that entity. All possible in-order combinations of entities of length 2 were then generated with Python's \verb|itertools.combinations|. Based on the context of the study, an additional filter was placed so that only co-mention pairs of a chemical and a disease are recorded. Implementations of these pre-processing steps can be found in Figure \ref{fig:preprocessing} of Appendix \ref{sec:implementations}.
+
+For the purpose of calculating occurrence probabilities, all sentences with any mention of a chemical or disease are counted into the total, even if a pair of chemical and disease cannot be established within the sentence. This is to maintain the consistency between chemical occurrences and disease occurrences. In addition to occurrences of individual and pairs of entities, four statistical measure are considered: Pointwise Mutual Information (PMI), Normalized Pointwise Mutual Information (NPMI), the Jaccard coefficient/index, and Symmetric Conditional Probability (SCP). With occurrences of pairs of chemical and disease entities recorded in dictionaries indexed by 2-tuples of IDs, calculations of these statistical occurrence metrics for pair of entities are straightforward through dictionary comprehensions, as shown in Figure \ref{fig:stats-calc} of Appendix \ref{sec:implementations}.
 
 
 \bibliographystyle{IEEEtran}
 \small{\bibliography{report}}
+\begin{appendices}
+\section{Implementation excerpts from statistical processing of grounded entities.} \label{sec:implementations}
+\begin{figure}[h]
+\inputpython{../grounding/co_occurrences.py}{32}{69}
+\caption{\label{fig:preprocessing} Pre-processing of grounded entities in sentences separated by new lines.}
+\end{figure}
+
+\begin{figure}[h]
+\inputpython{../grounding/co_occurrences.py}{107}{112}
+\caption{\label{fig:stats-calc} Calculations of statistical occurrence metrics for pairs of chemical and disease entities.}
+\end{figure}
+
+\end{appendices}
+
 \end{document}  
