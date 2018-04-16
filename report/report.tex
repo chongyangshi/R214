@@ -33,7 +33,7 @@
   fontadjust=true,
   basewidth=0.5em
 }
-\setcounter{topnumber}{3}
+\setcounter{topnumber}{4}
 \setcounter{bottomnumber}{1}
 \setcounter{totalnumber}{3}
 \let\OLDthebibliography\thebibliography
@@ -334,8 +334,135 @@ The full abstract collection of PubMed texts on chemically induced disorders num
 
 With grounded entities grouped by the sentences they originated from, duplicate entities within the same sentence were removed, with the assumption that multiple mentions of a noun entity in the same sentence is primarily for clarity rather than emphasis \cite{cortes20092}. Grounded entities in the sentence were then sorted in alphanumeric order to preserve consistency in composing co-mention pairs. The mention of each entity in each sentence was recorded globally as an occurrence of that entity. All possible in-order combinations of entities of length 2 were then generated with Python's \verb|itertools.combinations|. Based on the context of the study, an additional filter was placed so that only co-mention pairs of a chemical and a disease are recorded. Implementations of these pre-processing steps can be found in Figure \ref{fig:preprocessing} of Appendix \ref{sec:implementations}.
 
-For the purpose of calculating occurrence probabilities, all sentences with any mention of a chemical or disease are counted into the total, even if a pair of chemical and disease cannot be established within the sentence. This is to maintain the consistency between chemical occurrences and disease occurrences. In addition to occurrences of individual and pairs of entities, four statistical measure are considered: Pointwise Mutual Information (PMI), Normalized Pointwise Mutual Information (NPMI), the Jaccard coefficient/index, and Symmetric Conditional Probability (SCP). With occurrences of pairs of chemical and disease entities recorded in dictionaries indexed by 2-tuples of IDs, calculations of these statistical occurrence metrics for pair of entities are straightforward through dictionary comprehensions, as shown in Figure \ref{fig:stats-calc} of Appendix \ref{sec:implementations}.
+By the number of occurrences, the ten most common grounded entities and the pairs thereof in the PubMed abstract texts are shown in Figure \ref{fig:popular-individuals} and Figure \ref{fig:popular-pairs}.
 
+\begin{figure}[h]
+\begin{center}
+\fontsize{9}{11}\selectfont
+\begin{tabular}{|*{3}{c|}p{1.9cm}||*{3}{c|}p{1.9cm}|}\hline
+\multicolumn{4}{|c||}{\textbf{Chemicals}} & \multicolumn{4}{c|}{\textbf{Diseases}} \\ \hline 
+Count & Probability & MESH ID & Name & Count & Probability & MESH ID & Name \\ \hline 
+248227 & 0.045\% & D006859 & H & 166561 & 0.030\% & D009369 & tumour \\ \hline 
+135662 & 0.024\% & D009569 & NO & 155455 & 0.028\% & D004714 & endometrial hyperplasia or cancer \\ \hline 
+102140 & 0.018\% & D008694 & METH & 128998 & 0.023\% & D064420 & Toxicity \\ \hline 
+79642 & 0.014\% & C034818 & methyl 6,7-dimethoxy-4-ethyl-B-carboline-3-carboxylate & 60568 & 0.011\% & D020511 & disorder of neuromuscular transmission \\ \hline 
+78439 & 0.014\% & C066430 & 3-aminopropyl-diethoxy-methyl-phosphinic acid & 58780 & 0.011\% & D007239 & infections \\ \hline 
+70656 & 0.013\% & C025136 & phenylacetic acid & 54426 & 0.010\% & D047508 & massive hepatocellular necrosis \\ \hline 
+68107 & 0.012\% & D004298 & Dopamine & 51521& 0.009\% & D003643 & deaths \\ \hline 
+65758 & 0.012\% & D018698 & glutamine & 44556 & 0.008\% & D012140 & respiratory and cardiovascular depression \\ \hline 
+63797 & 0.011\% & D005947 & glucose & 40723 & 0.007\% & D031901 & gestational trophoblastic disease \\ \hline 
+62878 & 0.011\% & D002118 & Calcium & 38994 & 0.007\% & D008103  & cirrhosis of the liver \\ \hline 
+\end{tabular}
+\caption{\label{fig:popular-individuals} The top ten most commonly mentioned chemical and disease entities by appearance in number of sentences.}
+\end{center}
+\end{figure}
+
+\begin{figure}[h]
+\begin{center}
+\fontsize{9}{11}\selectfont
+\begin{tabular}{|*{6}{c|}}\hline
+\multicolumn{2}{|c|}{\textbf{Association}} & \multicolumn{2}{c|}{\textbf{Chemical}} & \multicolumn{2}{c|}{\textbf{Disease}} \\ \hline 
+Count & Probability & MESH ID & Name & MESH ID & Name \\ \hline 
+6425 & 0.00116\% & D003404 & creatinine & D009369 & tumour \\ \hline
+5860 & 0.00105\% & D003404 & creatinine & D047508 & massive hepatocellular necrosis \\ \hline
+5180 & 0.00093\% & D006859 & H & D020511 & disorder of neuromuscular transmission \\ \hline
+3995 & 0.00072\% & D004967 & estrogen & D004714 & endometrial hyperplasia or cancer \\ \hline
+3850 & 0.00069\% & D005472 & 5-FU & D004714 & endometrial hyperplasia or cancer \\ \hline
+3259 & 0.00059\% & D006859 & H & D012140 & respiratory and cardiovascular depression \\ \hline
+3162 & 0.00057\% & D002945 & cisplatinum & D004714 & endometrial hyperplasia or cancer \\ \hline
+3112 & 0.00056\% & D004317 & Doxorubicin & D004714 & endometrial hyperplasia or cancer \\ \hline
+2986 & 0.00054\% & D006859 & H & D004714 & endometrial hyperplasia or cancer \\ \hline
+2902 & 0.00052\% & D002945 & cisplatinum & D009369 & tumour \\ \hline
+\end{tabular}
+\caption{\label{fig:popular-pairs} The top ten most common associations of chemical and disease entities by appearance in number of sentences.}
+\end{center}
+\end{figure}
+
+For the purpose of calculating occurrence probabilities, all sentences with any mention of a chemical or disease are counted into the total, even if a pair of chemical and disease cannot be established within the sentence. This is to maintain the consistency between chemical occurrences and disease occurrences. In addition to occurrences of individual and pairs of entities, four statistical measure are considered: Pointwise Mutual Information (PMI), Normalized Pointwise Mutual Information (NPMI), the Jaccard coefficient/index, and Symmetric Conditional Probability (SCP). With occurrences of pairs of chemical and disease entities recorded in dictionaries indexed by 2-tuples of IDs, calculations of these statistical occurrence metrics for pair of entities are straightforward through dictionary comprehensions, as shown in Figure \ref{fig:stats-calc} of Appendix \ref{sec:implementations}. Top ten associations as measured by these metrics are shown in Figures \ref{fig:pmi}, \ref{fig:npmi}, \ref{fig:jaccard}, and \ref{fig:scp}.
+
+\begin{figure}[h]
+\begin{center}
+\fontsize{9}{11}\selectfont
+\begin{tabular}{|*{2}{c|}p{4.5cm}|c|p{4.5cm}|}\hline
+ & \multicolumn{2}{c|}{\textbf{Chemical}} & \multicolumn{2}{c|}{\textbf{Disease}} \\ \hline 
+ \textbf{PMI} & MESH ID   & Name                      & MESH ID   & Name                         \\ \hline
+ 8.95518 & C476217   & cinacalcet HCl            & D006961   & hyperparathyroidism          \\ \hline
+ 8.72841 & D005702   & Galanthamine hydrobromide & D014826   & vocal fold palsy             \\ \hline
+ 8.35901 & D013390   & Suxamethonium chloride    & D005207   & Fasciculations               \\ \hline
+ 8.35375 & D011441   & Propylthiouracil          & D006980   & hyperthyroidism              \\ \hline
+ 8.31867 & D013390   & Suxamethonium chloride    & D012019   & reflex sympathetic dystrophy \\ \hline
+ 8.31393 & C031942   & argatroban                & D013684   & telangiectasis               \\ \hline
+ 8.16299 & D005013   & ethosuximide              & D004832   & absence seizures             \\ \hline
+ 8.07865 & D008972   & molindone                 & D002819   & Choreoathetoid movements     \\ \hline
+ 7.99780 & D007464   & clioquinol                & C538178   & acrodermatitis enteropathica \\ \hline
+ 7.83060 & D004025   & dicyclomine               & D004211   & intravascular coagulation    \\ \hline
+\end{tabular}
+\caption{\label{fig:pmi} The top ten associations of chemical and disease entities as measured by Pointwise Mutual Information (PMI).}
+\end{center}
+\end{figure}
+
+\begin{figure}[h]
+\begin{center}
+\fontsize{9}{11}\selectfont
+\begin{tabular}{|*{2}{c|}p{4.5cm}|c|p{4.5cm}|}\hline
+ & \multicolumn{2}{c|}{\textbf{Chemical}} & \multicolumn{2}{c|}{\textbf{Disease}} \\ \hline 
+ \textbf{NPMI} & MESH ID   & Name                      & MESH ID   & Name                         \\ \hline
+ 0.594802 & D002248   & carbon monoxide    & D011041   & poisoning                                   \\ \hline
+ 0.550872 & C476217   & cinacalcet HCl     & D006961   & hyperparathyroidism                         \\ \hline
+ 0.535089 & D014673   & vecuronium bromide & D020879   & neuromuscular blockade                      \\ \hline
+ 0.530970 & D010622   & phencyclidine      & D006996   & hypocalcemia                                \\ \hline
+ 0.521261 & D004025   & dicyclomine        & D004211   & intravascular coagulation                   \\ \hline
+ 0.515581 & D018170   & sumatriptan        & D008881   & Migraine                                    \\ \hline
+ 0.507942 & D007980   & Levodopa           & D055154   & dysphonia                                   \\ \hline
+ 0.501047 & C010012   & adriamycinone      & D000160   & adverse effect on the proximal eighth nerve \\ \hline
+ 0.491024 & D002996   & clomiphene citrate & D011085   & polycystic ovary syndrome                   \\ \hline
+ 0.490998 & D011441   & Propylthiouracil   & D006980   & hyperthyroidism                             \\ \hline
+\end{tabular}
+\caption{\label{fig:npmi} The top ten associations of chemical and disease entities as measured by Normalized Pointwise Mutual Information (NPMI).}
+\end{center}
+\end{figure}
+
+\begin{figure}[h]
+\begin{center}
+\fontsize{9}{11}\selectfont
+\begin{tabular}{|*{2}{c|}p{4.5cm}|c|p{4.5cm}|}\hline
+ & \multicolumn{2}{c|}{\textbf{Chemical}} & \multicolumn{2}{c|}{\textbf{Disease}} \\ \hline 
+ \textbf{SCP} & MESH ID   & Name                      & MESH ID   & Name                         \\ \hline
+ 0.0396361  & D002248   & carbon monoxide    & D011041   & poisoning                       \\ \hline
+ 0.0177305  & D007980   & Levodopa           & D055154   & dysphonia                       \\ \hline
+ 0.0144888  & D010622   & phencyclidine      & D006996   & hypocalcemia                    \\ \hline
+ 0.0111154  & D003404   & creatinine         & D047508   & massive hepatocellular necrosis \\ \hline
+ 0.00975593 & D013311   & streptozotocin     & D003920   & Diabetic                        \\ \hline
+ 0.00924036 & D014673   & vecuronium bromide & D020879   & neuromuscular blockade          \\ \hline
+ 0.00903808 & D000244   & ADP                & D001791   & platelet aggregations           \\ \hline
+ 0.00865604 & C047426   & venlafaxine        & D001281   & Atrial Fibrillation             \\ \hline
+ 0.00822348 & D018170   & sumatriptan        & D008881   & Migraine                        \\ \hline
+ 0.00799549 & D007538   & Isoniazid          & D014376   & tuberculosis                    \\ \hline
+\end{tabular}
+\caption{\label{fig:scp} The top ten associations of chemical and disease entities as measured by Symmetric Conditional Probability (SCP).}
+\end{center}
+\end{figure}
+
+\begin{figure}[h]
+\begin{center}
+\fontsize{9}{11}\selectfont
+\begin{tabular}{|*{2}{c|}p{4.5cm}|c|p{4.5cm}|}\hline
+ & \multicolumn{2}{c|}{\textbf{Chemical}} & \multicolumn{2}{c|}{\textbf{Disease}} \\ \hline 
+ \textbf{Jaccard} & MESH ID   & Name                      & MESH ID   & Name                         \\ \hline
+        0.594802 & D002248   & carbon monoxide    & D011041   & poisoning                                   \\ \hline
+        0.550872 & C476217   & cinacalcet HCl     & D006961   & hyperparathyroidism                         \\ \hline
+        0.535089 & D014673   & vecuronium bromide & D020879   & neuromuscular blockade                      \\ \hline
+        0.530970  & D010622   & phencyclidine      & D006996   & hypocalcemia                                \\ \hline
+        0.521261 & D004025   & dicyclomine        & D004211   & intravascular coagulation                   \\ \hline
+        0.515581 & D018170   & sumatriptan        & D008881   & Migraine                                    \\ \hline
+        0.507942 & D007980   & Levodopa           & D055154   & dysphonia                                   \\ \hline
+        0.501047 & C010012   & adriamycinone      & D000160   & adverse effect on the proximal eighth nerve \\ \hline
+        0.491024 & D002996   & clomiphene citrate & D011085   & polycystic ovary syndrome                   \\ \hline
+        0.490998 & D011441   & Propylthiouracil   & D006980   & hyperthyroidism                             \\ \hline
+\end{tabular}
+\caption{\label{fig:jaccard} The top ten associations of chemical and disease entities as measured by the Jaccard index.}
+\end{center}
+\end{figure}
 
 \bibliographystyle{IEEEtran}
 \small{\bibliography{report}}

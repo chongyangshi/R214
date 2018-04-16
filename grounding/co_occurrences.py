@@ -7,6 +7,7 @@ from itertools import combinations
 from collections import defaultdict
 from operator import itemgetter
 from math import log
+from tabulate import tabulate
 
 import utils
 
@@ -113,6 +114,8 @@ jaccard = {i: associations[i] / (mentions[i[0]] + mentions[i[1]] - associations[
 
 print("Top 10 co-mentions by PMI (log base 2): ")
 co_mentions = sorted(pmi.items(), key=itemgetter(1), reverse=True)[:10]
+header = ("PMI", "MESH ID", "Name", "MESH ID", "Name")
+rows = []
 for c in co_mentions:
     first = c[0][0]
     first_c = dictionary[first][0]
@@ -120,11 +123,19 @@ for c in co_mentions:
     second = c[0][1]
     second_c = dictionary[second][0]
     second_t = dictionary[second][1]
+    if first_t.lower() == "chemical":
+        rows.append((c[1], first, first_c, second, second_c))
+    else:
+        rows.append((c[1], second, second_c, first, first_c))
     print("PMI {:0.5f} - {} ({}, {}) and {} ({}, {})".format(c[1], first, first_c, first_t, second, second_c, second_t))
+print("")
+print(tabulate(rows, header, tablefmt="latex"))
 print("")
 
 print("Top 10 co-mentions by Normalised PMI (log base 2): ")
 co_mentions = sorted(npmi.items(), key=itemgetter(1), reverse=True)[:10]
+header = ("NPMI", "MESH ID", "Name", "MESH ID", "Name")
+rows = []
 for c in co_mentions:
     first = c[0][0]
     first_c = dictionary[first][0]
@@ -132,11 +143,19 @@ for c in co_mentions:
     second = c[0][1]
     second_c = dictionary[second][0]
     second_t = dictionary[second][1]
+    if first_t.lower() == "chemical":
+        rows.append((c[1], first, first_c, second, second_c))
+    else:
+        rows.append((c[1], second, second_c, first, first_c))
     print("NPMI {:0.5f} - {} ({}, {}) and {} ({}, {})".format(c[1], first, first_c, first_t, second, second_c, second_t))
+print("")
+print(tabulate(rows, header, tablefmt="latex"))
 print("")
 
 print("Top 10 co-mentions by Symmetric Conditional Probability: ")
 co_mentions = sorted(scp.items(), key=itemgetter(1), reverse=True)[:10]
+header = ("SCP", "MESH ID", "Name", "MESH ID", "Name")
+rows = []
 for c in co_mentions:
     first = c[0][0]
     first_c = dictionary[first][0]
@@ -144,11 +163,19 @@ for c in co_mentions:
     second = c[0][1]
     second_c = dictionary[second][0]
     second_t = dictionary[second][1]
+    if first_t.lower() == "chemical":
+        rows.append((c[1], first, first_c, second, second_c))
+    else:
+        rows.append((c[1], second, second_c, first, first_c))
     print("SCP {:0.5f} - {} ({}, {}) and {} ({}, {})".format(c[1], first, first_c, first_t, second, second_c, second_t))
+print("")
+print(tabulate(rows, header, tablefmt="latex"))
 print("")
 
 print("Top 10 co-mentions by Jaccard Index: ")
 co_mentions = sorted(npmi.items(), key=itemgetter(1), reverse=True)[:10]
+header = ("Jaccard Index", "MESH ID", "Name", "MESH ID", "Name")
+rows = []
 for c in co_mentions:
     first = c[0][0]
     first_c = dictionary[first][0]
@@ -156,5 +183,11 @@ for c in co_mentions:
     second = c[0][1]
     second_c = dictionary[second][0]
     second_t = dictionary[second][1]
+    if first_t.lower() == "chemical":
+        rows.append((c[1], first, first_c, second, second_c))
+    else:
+        rows.append((c[1], second, second_c, first, first_c))
     print("Jaccard Index {:0.5f} - {} ({}, {}) and {} ({}, {})".format(c[1], first, first_c, first_t, second, second_c, second_t))
+print("")
+print(tabulate(rows, header, tablefmt="latex"))
 print("")
