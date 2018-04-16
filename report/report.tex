@@ -332,7 +332,7 @@ In general, a further improved grounding system may have the following features:
 
 The full abstract collection of PubMed texts on chemically induced disorders numbered 301,084,933 lines, with words already processed into a format identical to those used in Section \ref{sec:a-crf-features}. With reference named entity classes unavailable for each surface word (defaulting to outside entities), the improved entity recognition model from Section \ref{sec:a-crf-features} was used to perform entity recognition on a total of 301,084,933 surface words from 10,573,978 sentences. Tags generated through entity recognition were then cross-referenced with the original surface words and their lemmas for grounding, which was conducted in parallelised batches to reduce memory footprint. 
 
-With grounded entities grouped by the sentences they originated from, duplicate entities within the same sentence were removed, with the assumption that multiple mentions of a noun entity in the same sentence is primarily for clarity rather than emphasis \cite{cortes20092}. Grounded entities in the sentence were then sorted in alphanumeric order to preserve consistency in composing co-mention pairs. The mention of each entity in each sentence was recorded globally as an occurrence of that entity. All possible in-order combinations of entities of length 2 were then generated with Python's \verb|itertools.combinations|. Based on the context of the study, an additional filter was placed so that only co-mention pairs of a chemical and a disease are recorded. Implementations of these pre-processing steps can be found in Figure \ref{fig:preprocessing} of Appendix \ref{sec:implementations}.
+With grounded entities grouped by the sentences they originated from, duplicate entities within the same sentence were removed, with the assumption that multiple mentions of a noun entity in the same sentence is primarily for clarity rather than emphasis \cite{clark1979search}. Grounded entities in the sentence were then sorted in alphanumeric order to preserve consistency in composing co-mention pairs. The mention of each entity in each sentence was recorded globally as an occurrence of that entity. All possible in-order combinations of entities of length 2 were then generated with Python's \verb|itertools.combinations|. Based on the context of the study, an additional filter was placed so that only co-mention pairs of a chemical and a disease are recorded. Implementations of these pre-processing steps can be found in Figure \ref{fig:preprocessing} of Appendix \ref{sec:implementations}.
 
 By the number of occurrences, the ten most common grounded entities and the pairs thereof in the PubMed abstract texts are shown in Figure \ref{fig:popular-individuals} and Figure \ref{fig:popular-pairs}.
 
@@ -378,7 +378,13 @@ Count & Probability & MESH ID & Name & MESH ID & Name \\ \hline
 \end{center}
 \end{figure}
 
-For the purpose of calculating occurrence probabilities, all sentences with any mention of a chemical or disease are counted into the total, even if a pair of chemical and disease cannot be established within the sentence. This is to maintain the consistency between chemical occurrences and disease occurrences. In addition to occurrences of individual and pairs of entities, four statistical measure are considered: Pointwise Mutual Information (PMI), Normalized Pointwise Mutual Information (NPMI), the Jaccard coefficient/index, and Symmetric Conditional Probability (SCP). With occurrences of pairs of chemical and disease entities recorded in dictionaries indexed by 2-tuples of IDs, calculations of these statistical occurrence metrics for pair of entities are straightforward through dictionary comprehensions, as shown in Figure \ref{fig:stats-calc} of Appendix \ref{sec:implementations}. Top ten associations as measured by these metrics are shown in Figures \ref{fig:pmi}, \ref{fig:npmi}, \ref{fig:jaccard}, and \ref{fig:scp}.
+It was expected that by the sole criterion of number of occurrences, chemicals and syndromes of conditions commonly involved in the studies of environments and diseases will occupy a significant proportions of the top tens. This was observed in Figure \ref{fig:popular-individuals} with the presence of hydrogen, nitrogen oxide, calcium, as well as ``tumour'', ``infections'' and ``deaths''. These concepts alone do not confer a significant amount of useful information about chemical-induced diseases. Entities related to more specific concepts do exist, however, such as two chemicals (C034818, C066430) associated with modulation of GABAA receptors, which affect anxiety-related mental states, suggesting the prominence of studies in chemically induced disorders among the abstract texts. Diseases related to different organs within the top ten are also good indicators of lesions involved in the studies.
+
+Apart from the potential links between creatinine, cisplatinum (Cisplatin), and tumours, most of the top co-mentions based on simple co-occurrence counts are associated with a single class of diseases -- endometrial hyperplasia or cancer. This signals a key limitation of ranking associations based on simple co-occurrence counts: source texts with imbalanced compositions of study can make broad observations of associations between chemicals and diseases difficult. Once again the three associations between hydrogen and diseases provide little useful information, as hydrogen is an almost-universal component of organic molecules. 
+
+To improve the effectiveness of co-occurrence count-based rankings, it may be possible to take ideas from object categorisation techniques by introducing relative locations (or in text mining, locations of grounded entities in sentences) of terms into consideration \cite{galleguillos2008object}, or borrow from machine translation techniques by applying arithmetic and geometric mean functions to co-occurrence counts from an imbalanced corpus \cite{zhu2014improving}. Although ultimately, the aforementioned issues prompt more sophisticated statistical measures to be employed for better identifying the links between environmental chemicals and diseases.
+
+For the purpose of calculating occurrence probabilities, all sentences with any mention of a chemical or disease are counted into the total, even if a pair of chemical and disease cannot be established within the sentence. This is to maintain the consistency between chemical occurrences and disease occurrences. In addition to occurrences of individual and pairs of entities, four statistical measure are considered: Pointwise Mutual Information (PMI), Normalized Pointwise Mutual Information (NPMI), the Jaccard coefficient/index, and Symmetric Conditional Probability (SCP). With occurrences of pairs of chemical and disease entities recorded in dictionaries indexed by 2-tuples of IDs, calculations of these statistical occurrence metrics for pair of entities are straightforward through dictionary comprehensions, as shown in Figure \ref{fig:stats-calc} of Appendix \ref{sec:implementations}. Top ten associations as measured by these metrics are shown in Figures \ref{fig:pmi}, \ref{fig:npmi}, \ref{fig:jaccard}, and \ref{fig:scp} respectively.
 
 \begin{figure}[h]
 \begin{center}
@@ -426,27 +432,6 @@ For the purpose of calculating occurrence probabilities, all sentences with any 
 \begin{center}
 \fontsize{9}{11}\selectfont
 \begin{tabular}{|*{2}{c|}p{4.5cm}|c|p{4.5cm}|}\hline
- \multirow{2}{*}{\textbf{SCP}} & \multicolumn{2}{c|}{\textbf{Chemical}} & \multicolumn{2}{c|}{\textbf{Disease}} \\ \cline{2-5}
- & MESH ID   & Name                      & MESH ID   & Name                         \\ \hline
- 0.0396361  & D002248   & carbon monoxide    & D011041   & poisoning                       \\ \hline
- 0.0177305  & D007980   & Levodopa           & D055154   & dysphonia                       \\ \hline
- 0.0144888  & D010622   & phencyclidine      & D006996   & hypocalcemia                    \\ \hline
- 0.0111154  & D003404   & creatinine         & D047508   & massive hepatocellular necrosis \\ \hline
- 0.00975593 & D013311   & streptozotocin     & D003920   & Diabetic                        \\ \hline
- 0.00924036 & D014673   & vecuronium bromide & D020879   & neuromuscular blockade          \\ \hline
- 0.00903808 & D000244   & ADP                & D001791   & platelet aggregations           \\ \hline
- 0.00865604 & C047426   & venlafaxine        & D001281   & Atrial Fibrillation             \\ \hline
- 0.00822348 & D018170   & sumatriptan        & D008881   & Migraine                        \\ \hline
- 0.00799549 & D007538   & Isoniazid          & D014376   & tuberculosis                    \\ \hline
-\end{tabular}
-\caption{\label{fig:scp} The top ten associations of chemical and disease entities as measured by Symmetric Conditional Probability (SCP).}
-\end{center}
-\end{figure}
-
-\begin{figure}[h]
-\begin{center}
-\fontsize{9}{11}\selectfont
-\begin{tabular}{|*{2}{c|}p{4.5cm}|c|p{4.5cm}|}\hline
  \multirow{2}{*}{\textbf{Jaccard}} & \multicolumn{2}{c|}{\textbf{Chemical}} & \multicolumn{2}{c|}{\textbf{Disease}} \\ \cline{2-5}
  & MESH ID   & Name                      & MESH ID   & Name                         \\ \hline
         0.594802 & D002248   & carbon monoxide    & D011041   & poisoning                                   \\ \hline
@@ -464,10 +449,31 @@ For the purpose of calculating occurrence probabilities, all sentences with any 
 \end{center}
 \end{figure}
 
+\begin{figure}[h]
+\begin{center}
+\fontsize{9}{11}\selectfont
+\begin{tabular}{|*{2}{c|}p{4.5cm}|c|p{4.5cm}|}\hline
+ \multirow{2}{*}{\textbf{SCP}} & \multicolumn{2}{c|}{\textbf{Chemical}} & \multicolumn{2}{c|}{\textbf{Disease}} \\ \cline{2-5}
+ & MESH ID   & Name                      & MESH ID   & Name                         \\ \hline
+ 0.0396361  & D002248   & carbon monoxide    & D011041   & poisoning                       \\ \hline
+ 0.0177305  & D007980   & Levodopa           & D055154   & dysphonia                       \\ \hline
+ 0.0144888  & D010622   & phencyclidine      & D006996   & hypocalcemia                    \\ \hline
+ 0.0111154  & D003404   & creatinine         & D047508   & massive hepatocellular necrosis \\ \hline
+ 0.00975593 & D013311   & streptozotocin     & D003920   & Diabetic                        \\ \hline
+ 0.00924036 & D014673   & vecuronium bromide & D020879   & neuromuscular blockade          \\ \hline
+ 0.00903808 & D000244   & ADP                & D001791   & platelet aggregations           \\ \hline
+ 0.00865604 & C047426   & venlafaxine        & D001281   & Atrial Fibrillation             \\ \hline
+ 0.00822348 & D018170   & sumatriptan        & D008881   & Migraine                        \\ \hline
+ 0.00799549 & D007538   & Isoniazid          & D014376   & tuberculosis                    \\ \hline
+\end{tabular}
+\caption{\label{fig:scp} The top ten associations of chemical and disease entities as measured by Symmetric Conditional Probability (SCP).}
+\end{center}
+\end{figure}
+
 \bibliographystyle{IEEEtran}
 \small{\bibliography{report}}
 \begin{appendices}
-\section{Implementation excerpts from statistical processing of grounded entities.} \label{sec:implementations}
+\section{Excerpts of implementation from statistical processing of grounded entities.} \label{sec:implementations}
 \begin{figure}[h]
 \inputpython{../grounding/co_occurrences.py}{32}{69}
 \caption{\label{fig:preprocessing} Pre-processing of grounded entities in sentences separated by new lines.}
