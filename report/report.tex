@@ -203,7 +203,7 @@ coordinates {
 
 A reduced $c2$ parameter results in longer training, but also generally improved recall and the overall $F_1$-score. With the adverse effects of extended training time and reduced precision (due to increased overfitting), as well as diminished gains in recall, $c2=0.25$ was chosen as the $c2$ value of choice.
 
-With $c2=0.25$, L-BFGS also allows different line search algorithms, which yield roughly the same training speed, as well as almost the same performance with all named entity classes, as shown in Figure \ref{fig:linesearch}. Therefore the default More and Thuente's method is kept unchanged.
+With $c2=0.25$, L-BFGS also allows different line search algorithms, which yield roughly the same training speed, as well as almost the same performance with all named entity classes, as shown in Figure \ref{fig:linesearch}. Therefore the default More and Thuente's method was kept unchanged.
 
 \begin{figure}[h]
 \begin{center}
@@ -245,9 +245,9 @@ I-Chemical  & 0.7998 & 0.6087 & 0.6913 & 0.7438 & 0.6081 & 0.6691 & +3.32\% \\ \
 
 Changes made to features and L-BFGS parameters resulted in a model which yields improved precision and recall across the board. Combining the metrics of precision and recall, changes in $F_1$-scores are shown on the right of Figure \ref{fig:improved-compare}. The already high-precision and high-recall terms outside entities received the least improvement, while disease terms at the start of entities benefited the most from the improved model. More than 3\% of improvements were made to all other named entity classes and the macro-average. Based on these results from testing on the unseen \emph{test} input dataset, I believe it is reasonably conclusive that the improved model is superior to the original in entity recognition of environment and disease terms.
 
-\section{Grounding named entities through approximate string matching}
+\section{Grounding named entities through approximate string matching} \label{sec:grounding}
 
-The MESH concept dictionary provides terms for two classes of entities: chemicals and diseases. Based on the class of entity determined by the improved entity recognition model from the previous section, all possible choices of the specified class in the MESH dictionary were supplied to the approximate string matching process facilitated by the \verb|fuzzywuzzy| \cite{fuzzywuzzy} library. With the initial approach, best matching dictionary terms were grouped by their original sentences, which were annotated with their respective matched terms in output.
+The MESH concept dictionary provides terms for two classes of entities: chemicals and diseases. Based on the class of entity determined by the improved entity recognition model from the previous section, all possible choices of the specified class in the MESH dictionary were supplied to the approximate string matching process facilitated by the \verb|fuzzywuzzy| \cite{fuzzywuzzy} library. With the initial approach, best matching dictionary terms were grouped by their original sentences, which were annotated with their respective matched terms in output. In the examples presented below, \verb|**| will be used to annotate terms grounded in the sentence, with reference numbers point to the grounded entity from the dictionary after the sentence.
 
 Unfortunately, this initial approach clearly appeared to be inadequate due to the lack of connecting recognised terms belonging to a continuous entity:
 
@@ -267,7 +267,7 @@ Unfortunately, this initial approach clearly appeared to be inadequate due to th
 {12} axonal damage (Score: 90)
 \end{lstlisting}
 
-The first ten terms in the above sentence included in the \emph{devel} dataset are designated as being outside a named entity class (``O''), but mis-recognised by the entity recognition model as a chemical spanning across multiple terms (in fact, the assembled term is an enzyme, which can be counted as a chemical but not considered as such by the dataset's context). The result of the fragmented individual approximate string matching process is a long list of poor matches annotated. Similarly, the fragmentation of ``tabular'' and ``damage'' caused them to be individually (and inaccurately) matched with individual terms in the dictionary.
+The first ten terms in the above sentence included in the \emph{devel} dataset are designated as being outside a named entity class (``O''), but mis-recognised by the entity recognition model as a chemical spanning across multiple terms (in fact, the assembled term is an enzyme, which can be counted as a chemical but not considered as such by the dataset's context). The result of the fragmented individual approximate string matching process is a long list of poor matches annotated. Similarly, the fragmentation of ``tabular'' and ``damage'' caused them to be individually matched with separate, irrelevant terms in the dictionary.
 
 These two errors highlight the need of reassembling neighbouring terms belonging to the same entity before attempting approximate string matching. Therefore, the grounding process was modified to first reassemble these neighbouring terms together (e.g. from ``... + $O$ + $B-Chemical$ + $I-Chemical$ + $I-Chemical$ +  $O$ + ...'' to ``... + $O$ + $Chemical$ +  $O$ + ...'') before matching the assembled term with the best approximation in the dictionary. The above example now becomes:
 
@@ -277,7 +277,7 @@ These two errors highlight the need of reassembling neighbouring terms belonging
 {2} acute tubular necrosis (Score: 86)
 \end{lstlisting}
 
-While the enzyme is still not matched by an appropriate term in the dictionary (likely simply does not exist), with reassembly applied, ``acute tubular necrosis'' is now a very good biomedical description of ``tubular damage'' in the original text. To further resolve the lack of dictionary coverage over complex chemical constructs, efficient co-occurrence-based concept associations \cite{tsuruoka2008facta} could aid the grounding system in finding the best-matching entity based on functional groups in the term. 
+While the enzyme is still not matched by an appropriate term in the dictionary (which likely does not exist), with reassembly applied, ``acute tubular necrosis'' is now a very good biomedical description of ``tubular damage'' in the original text. To further resolve the lack of dictionary coverage over complex chemical constructs, efficient co-occurrence-based concept associations \cite{tsuruoka2008facta} could aid the grounding system in finding the best-matching entity based on functional groups in the term. 
 
 Overall, the grounding method with entity reassembly works fairly well, such as on the followed sentence:
 
@@ -288,7 +288,7 @@ BACKGROUND : **Calcitriol ** {1} therapy suppresses serum levels of parathyroid 
 {3} hypercalcemia (Score: 100)
 \end{lstlisting}
 
-While Calcitriol does not exist in the MESH dictionary, it does increase the body's intake of its closest match in the dictionary -- calcium (Ca). Although this is mostly a lucky match due to the lack of a less relevant term with a shorter edit distance, similar processes of inferring terms through biomedical relations have already been applied elsewhere to improve grounding, such as utilising contrastive information between proteins \cite{kim2005biocontrasts}. More systematically, machine learning-based inference systems trained on biomedical databases can used to effectively construct knowledge base from unstructured biomedical information \cite{shin2015incremental}. In the above example, ``renal failure'' was also correctly matched with the corresponding term in the dictionary after entity reassembly before grounding.
+While Calcitriol does not exist in the MESH dictionary, it does increase the body's intake of its closest match in the dictionary -- Calcium (Ca). Although this is mostly a lucky match due to the lack of a less relevant term with a shorter edit distance, similar processes of inferring terms through biomedical relations have already been applied elsewhere to improve grounding, such as utilising contrastive information between proteins \cite{kim2005biocontrasts}. More systematically, machine learning-based inference systems trained on biomedical databases can be used to effectively construct knowledge base from unstructured biomedical information \cite{shin2015incremental}. In the above example, ``renal failure'' was also correctly matched with the corresponding term in the dictionary after entity reassembly before grounding.
 
 Some other issues do persist after entity reassembly, such as the lack of ability to match complex acronyms with their full base words:
 
@@ -322,17 +322,17 @@ Myelodysplastic syndromes concern bone marrows, while Fanconi syndrome describes
 
 In general, a further improved grounding system may have the following features:
 \begin{itemize}
-	\item Co-occurrence-based concept associations that can be queried efficiently \cite{tsuruoka2008facta} are used to find best-matching entities of complex chemical constructs if a direct match in vocabulary does not exist;
+	\item Co-occurrence concept associations that can be queried efficiently \cite{tsuruoka2008facta} are used to find best-matching entities of complex chemical constructs if a direct match in vocabulary does not exist;
 	\item For sources containing unstructured biomedical information, databases storing relational information \cite{kim2005biocontrasts} between entities are used to train inference agents \cite{shin2015incremental} to better resolve terms without a direct match;
 	\item To resolve uncommon acronyms that are not present in the dictionary, rules generated from ontology databases are applied to resolve the acronyms into canonical forms \cite{naderi2011organismtagger}, which are more likely to encounter good matches during grounding;
-	\item Unsupervised probabilistic models \cite{pecina2010lexical} and CRF-based normalization algorithms \cite{lee2016audis} are used to improve accuracy when grounding compositions of terms.
+	\item Unsupervised probabilistic models \cite{pecina2010lexical} and CRF-based normalization algorithms \cite{lee2016audis} are used to improve accuracy when grounding terms that are compositions.
 \end{itemize}
 
 \section{Identifying associations between disease and chemical mentions}
 
 The full abstract collection of PubMed texts on chemically induced disorders numbered 301,084,933 lines, with words already processed into a format identical to those used in Section \ref{sec:a-crf-features}. With reference named entity classes unavailable for each surface word (defaulting to outside entities), the improved entity recognition model from Section \ref{sec:a-crf-features} was used to perform entity recognition on a total of 301,084,933 surface words from 10,573,978 sentences. Tags generated through entity recognition were then cross-referenced with the original surface words and their lemmas for grounding, which was conducted in parallelised batches to reduce memory footprint. 
 
-\subsection{Simple co-occurrence counts}
+\subsection{Simple co-occurrence counts} \label{subsec:simple-co}
 
 With grounded entities grouped by the sentences they originated from, duplicate entities within the same sentence were removed, with the assumption that multiple mentions of a noun entity in the same sentence is primarily for clarity rather than emphasis \cite{clark1979search}. Grounded entities in the sentence were then sorted in alphanumeric order to preserve consistency in composing co-mention pairs. The mention of each entity in each sentence was recorded globally as an occurrence of that entity. All possible in-order combinations of entities of length 2 were then generated with Python's \verb|itertools.combinations|. Based on the context of the study, an additional filter was placed so that only co-mention pairs of a chemical and a disease are recorded. Implementations of these pre-processing steps can be found in Figure \ref{fig:preprocessing} of Appendix \ref{sec:implementations}.
 
@@ -341,7 +341,7 @@ By the number of occurrences, the ten most common grounded entities and the pair
 \begin{figure}[h]
 \begin{center}
 \fontsize{9}{11}\selectfont
-\begin{tabular}{|*{3}{c|}p{1.9cm}||*{3}{c|}p{1.9cm}|}\hline
+\begin{tabular}{|*{3}{c|}p{2cm}||*{3}{c|}p{2cm}|}\hline
 \multicolumn{4}{|c||}{\textbf{Chemicals}} & \multicolumn{4}{c|}{\textbf{Diseases}} \\ \hline 
 Count & Probability & MESH ID & Name & Count & Probability & MESH ID & Name \\ \hline 
 248227 & 0.045\% & D006859 & H & 166561 & 0.030\% & D009369 & tumour \\ \hline 
@@ -382,13 +382,13 @@ Count & Probability & MESH ID & Name & MESH ID & Name \\ \hline
 
 It was expected that by the sole criterion of number of occurrences, chemicals and syndromes of conditions commonly involved in the studies of environments and diseases will occupy a significant proportions of the top tens. This was observed in Figure \ref{fig:popular-individuals} with the presence of hydrogen, nitrogen oxide, calcium, as well as ``tumour'', ``infections'' and ``deaths''. These concepts alone do not confer a significant amount of useful information about chemical-induced diseases. Entities related to more specific concepts do exist, however, such as two chemicals (C034818, C066430) associated with modulation of GABAA receptors, which affect anxiety-related mental states, suggesting the prominence of studies in chemically induced disorders among the abstract texts. Diseases related to different organs within the top ten are also good indicators of lesions involved in the studies.
 
-Apart from the potential links between creatinine, cisplatinum (Cisplatin), and tumours, most of the top co-mentions based on simple co-occurrence counts are associated with a single class of diseases -- endometrial hyperplasia or cancer. This signals a key limitation of ranking associations based on simple co-occurrence counts: source texts with imbalanced compositions of study can make broad observations of associations between chemicals and diseases difficult. Once again the three associations between hydrogen and diseases provide little useful information, as hydrogen is an almost-universal component of organic molecules. 
+Apart from the potential links between creatinine, cisplatinum (Cisplatin), and tumours, most of the top co-mentions based on simple co-occurrence counts are associated with a single class of diseases -- endometrial hyperplasia or cancer. This signals a key limitation of ranking associations based on simple co-occurrence counts: source texts with imbalanced compositions of study can make broad observations of associations between chemicals and diseases difficult. Once again the three associations between hydrogen and diseases provide very little useful information, as hydrogen is an almost-universal component of organic molecules. 
 
-To improve the effectiveness of co-occurrence count-based rankings, it may be possible to take ideas from object categorisation techniques by introducing relative locations (or in text mining, locations of grounded entities in sentences) of terms into consideration \cite{galleguillos2008object}, or borrow from machine translation techniques by applying arithmetic and geometric mean functions to co-occurrence counts from an imbalanced corpus \cite{zhu2014improving}. Ultimately however, the aforementioned issues prompt more sophisticated statistical measures to be employed for better identifying the links between environmental chemicals and diseases.
+To improve the effectiveness of co-occurrence count-based rankings, it may be possible to take ideas from object categorisation techniques by introducing relative locations (or in text mining, locations of grounded entities in sentences) of terms into consideration \cite{galleguillos2008object}, or to borrow from machine translation techniques by applying arithmetic and geometric mean functions to co-occurrence counts from an imbalanced corpus \cite{zhu2014improving}. Ultimately however, the aforementioned issues prompt more sophisticated statistical measures to be employed for better identifying the links between environmental chemicals and diseases.
 
-\subsection{Statistical occurrence metrics}
+\subsection{Statistical measures}
 
-For the purpose of calculating occurrence probabilities, all sentences with any mention of a chemical or disease are counted into the total, even if a pair of chemical and disease cannot be established within the sentence. This is to maintain the consistency between chemical occurrences and disease occurrences. In addition to occurrences of individual and pairs of entities, four statistical measure are considered: Pointwise Mutual Information (PMI), Normalized Pointwise Mutual Information (NPMI), the Jaccard coefficient/index, and Symmetric Conditional Probability (SCP). With occurrences of pairs of chemical and disease entities recorded in dictionaries indexed by 2-tuples of IDs, calculations of these statistical occurrence metrics for pair of entities are straightforward through dictionary comprehensions, as shown in Figure \ref{fig:stats-calc} of Appendix \ref{sec:implementations}. Top ten associations as measured by these metrics are shown in Figures \ref{fig:pmi}, \ref{fig:npmi}, \ref{fig:jaccard}, and \ref{fig:scp} respectively.
+For the purpose of calculating occurrence probabilities, all sentences with any mention of a chemical or disease are counted into the total, even if a pair of chemical and disease cannot be established within the sentence. This is to maintain the consistency between chemical occurrences and disease occurrences. In addition to occurrences of individual and pairs of entities, four statistical measure are considered: Pointwise Mutual Information (PMI), Normalized Pointwise Mutual Information (NPMI), the Jaccard coefficient/index, and Symmetric Conditional Probability (SCP). With occurrences of pairs of chemical and disease entities recorded in dictionaries indexed by 2-tuples of IDs, calculations of these statistical co-occurrence metrics for pair of entities are straightforward through dictionary comprehensions, as shown in Figure \ref{fig:stats-calc} of Appendix \ref{sec:implementations}. Top ten associations as measured by these metrics are shown in Figures \ref{fig:pmi}, \ref{fig:npmi}, \ref{fig:jaccard}, and \ref{fig:scp} respectively. Logarithms with base 2 were used for all relevant calculations.
 
 \begin{figure}[h]
 \begin{center}
@@ -457,6 +457,8 @@ With Normalized PMI (NPMI) to constrain the level of co-occurrence indicated by 
 \end{center}
 \end{figure}
 
+The Jaccard index disregards the shapes and distributions of inputs \cite{leydesdorff2008normalization} to mitigate the undesirable influences thereof when identifying concept associations. A majority of the top ten associations determined by the Jaccard Index are also present in NMPI's top ten. Among the differences, it is notable that the arterial carbon dioxide strengthen effects of pneumocystis pneumonia \cite{bouma2009normalized} has been identified. The direction of this association is opposite to most others with chemicals as sources of effects.
+
 \begin{figure}[h]
 \begin{center}
 \fontsize{9}{11}\selectfont
@@ -478,8 +480,22 @@ With Normalized PMI (NPMI) to constrain the level of co-occurrence indicated by 
 \end{center}
 \end{figure}
 
+Finally, being the most focused on conditional cause and effects, Symmetric Conditional Probability (SCP) returned its top ten associations broadly identical to those already identified by NPMI and the Jaccard index. The only new addition appears to be from the use of streptozotocin to induce diabetes in experimental animals \cite{rossini1977studies}. 
+
+\subsection{Limitations}
+
+In addition to limitations of ranking associations through simple co-occurrence counts discussed in \ref{subsec:simple-co}, two further areas of limitations exist in identifying chemically induced diseases through the method studied in this report. 
+
+The first area of limitation lays on the limited effectiveness of automated CRF entity recognition and grounding through approximate string matching. Imperfect entity recognition will cause some entities that can otherwise be appropriately grounded to be mislabelled as outside named entities, which will not be grounded. Limitations of grounding as discussed in Section \ref{sec:grounding} will supply improperly-grounded entities into the calculations of statistical co-occurrence metrics, which in turn affect the accuracies of top associations identified. Entity recognition and grounding algorithms with improved performance are required to mitigate this area of limitation.
+
+The second area of limitation was caused by the simplifications made when calculating probabilities and statistical metrics. Duplicates of the same grounded entity within the same sentence were deducted from consideration. Orders of occurrences between different grounded chemical and disease entities within the same sentence, or between different sentences from the same abstract are not considered, which may hold useful information related to their associations \cite{galleguillos2008object}. 
+
+As each entity or pair of entities is counted at most once in each sentence, the total number of sentences was used as the denominator in probability calculations, so that probabilities of all entities or pairs of entities will have a common denominator. This additional simplification resulted in the omission of sentences with only chemical entities or only disease entities grounded. While at sentence-level they cannot be said to have any associations, additional associations may have been possible if the same sentences within the same abstract could be considered together.
+
 \bibliographystyle{IEEEtran}
 \small{\bibliography{report}}
+
+\clearpage
 \begin{appendices}
 \section{Excerpts of implementation from statistical processing of grounded entities.} \label{sec:implementations}
 \begin{figure}[h]
@@ -488,7 +504,7 @@ With Normalized PMI (NPMI) to constrain the level of co-occurrence indicated by 
 \end{figure}
 
 \begin{figure}[h]
-\inputpython{../grounding/co_occurrences.py}{107}{112}
+\inputpython{../grounding/co_occurrences.py}{107}{113}
 \caption{\label{fig:stats-calc} Calculations of statistical occurrence metrics for pairs of chemical and disease entities.}
 \end{figure}
 
