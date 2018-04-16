@@ -173,7 +173,7 @@ print(tabulate(rows, header, tablefmt="latex"))
 print("")
 
 print("Top 10 co-mentions by Jaccard Index: ")
-co_mentions = sorted(npmi.items(), key=itemgetter(1), reverse=True)[:10]
+co_mentions = sorted(jaccard.items(), key=itemgetter(1), reverse=True)[:10]
 header = ("Jaccard Index", "MESH ID", "Name", "MESH ID", "Name")
 rows = []
 for c in co_mentions:
