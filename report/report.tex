@@ -33,7 +33,7 @@
   fontadjust=true,
   basewidth=0.5em
 }
-\setcounter{topnumber}{4}
+\setcounter{topnumber}{3}
 \setcounter{bottomnumber}{1}
 \setcounter{totalnumber}{3}
 \let\OLDthebibliography\thebibliography
@@ -59,7 +59,7 @@ For the main course assignment, I am undertaking the second practical option (\t
 \section{Improving the Conditional Random Fields named entity recognizer} \label{sec:a-crf-features}
 \subsection{Ablating features from the original feature set} \label{subsec:ablating}
 
-Based on the default \emph{n}-gram feature set in the feature extraction script, the script was modified to ablate each feature in turn. To provide a better understanding of the effects by offsets of surface form words, all surface forms of words within an offset of 1 (the trigram) were knocked out from the templates first, then just the surface forms of words before and after the current word (-1/1). Other features including the lemma, phonetic coding ($soundex$), part-of-speech, and chunk in IOB2 notation of the current word only. The resulting precisions, recall rates, and $F_1$-scores from ablating each feature on the \emph{devel} dataset are presented separately in Figures \ref{fig:ablation1}, \ref{fig:ablation2}, and \ref{fig:ablation3}. For each named entity class as well as the overall average, with none-ablated as reference, improved performance due to ablation are presented in \textbf{bold}.
+Based on the initial \emph{n}-gram feature set from the feature extraction script, the script was modified to ablate each feature in turn. To provide a better understanding of contributions from the offsets on surface form words, the entire word trigram was knocked out first, followed by just the -1/1 token offsets (leaving the unigram word behind). Other features knocked out in turn included the lemma, phonetic coding ($soundex$), part-of-speech, and chunk information in IOB2 notation, all of which were unigram by default, covering the current token only. The resulting precisions, recall rates, and $F_1$-scores from ablating each feature on the \emph{devel} dataset are presented separately in Figures \ref{fig:ablation1}, \ref{fig:ablation2}, and \ref{fig:ablation3}, with the corresponding performance of the original model as reference. Improved performance due to ablation are shown in \textbf{bold}.
 
 \begin{figure}[h]
 \begin{center}
@@ -73,7 +73,7 @@ I-Disease    & 0.7404 & 0.7152 & 0.7167 & \textbf{0.7467} & \textbf{0.7506} & \t
 I-Chemical  & 0.7556 & 0.6488 & 0.6745 & \textbf{0.7569} & \textbf{0.7612} & \textbf{0.7906} & \textbf{0.7682} \\ \hline
 \textbf{Macro-average} & 0.8420 & 0.8142 & 0.8209 & 0.8410 & 0.8410 & \textbf{0.8589} &\textbf{ 0.8471} \\ \hline
 \end{tabular}
-\caption{\label{fig:ablation1} Resulting \textbf{precisions} on different named entity classes from ablating individual features from the original feature set. }
+\caption{\label{fig:ablation1} Resulting \textbf{precisions} on different named entity classes after ablating individual features from the original feature set.}
 \end{center}
 \end{figure}
 
@@ -89,7 +89,7 @@ I-Disease    & 0.6018 & 0.5530 & 0.5607 & 0.5993 & 0.5952 & \textbf{0.6029} & 0.
 I-Chemical  & 0.5961 & 0.5114 & 0.5275 & 0.5950 & 0.5910 & 0.5938 & \textbf{0.5990} \\ \hline
 \textbf{Macro-average} & 0.6908 & 0.6326 & 0.6479 & 0.6813 & 0.6766 & 0.6677 & 0.6896 \\ \hline
 \end{tabular}
-\caption{\label{fig:ablation2} Resulting \textbf{recall rates} on different named entity classes from ablating individual features from the original feature set. }
+\caption{\label{fig:ablation2} Resulting \textbf{recall rates} on different named entity classes after ablating individual features from the original feature set. }
 \end{center}
 \end{figure}
 
@@ -105,27 +105,27 @@ I-Disease    & 0.6640 & 0.6238 & 0.6292 & \textbf{0.6649} & 0.6639 & \textbf{0.6
 I-Chemical  & 0.6665 & 0.5720 & 0.5920 & 0.6662 & 0.6654 & \textbf{0.6782} & \textbf{0.6731} \\ \hline
 \textbf{Macro-average} & 0.7551 & 0.7046 & 0.7182 & 0.7451 & 0.7451 & 0.7443 & \textbf{0.7562} \\ \hline
 \end{tabular}
-\caption{\label{fig:ablation3} Resulting \textbf{$F_1$-scores} on different named entity classes from ablating individual features from the original feature set.}
+\caption{\label{fig:ablation3} Resulting \textbf{$F_1$-scores} on different named entity classes after ablating individual features from the original feature set.}
 \end{center}
 \end{figure}
 
-Surprisingly, for chemicals at the beginning of entities (B-Chemcal), the precision (correct tags among those tagged) increased substantially when the surface form word feature is ablated. Ablating only the surface forms of before and after tokens (-1/1) produced slightly higher precision than ablating the entire surface form trigram. This is however accompanied by substantially reduced precisions on all other named entity classes, as well as reduced recall rate (correct tags among all relevant inputs that can be tagged) nearly across the board. As B-chemicals already bear a fairly high precision (91.78\%), it is not advisable to ablate the surface forms and reduce recall into the 50\% range. 
+Surprisingly, for chemicals at the start of entities (B-Chemicals), the precision (correct tags among those tagged) increased substantially when the entire surface form word trigram was knocked out. Ablating only the token offsets (-1/1) produced slightly higher precision than ablating the entire trigram. This is however at the cost of substantially reducing precisions for all other named entity classes, as well as reducing recall rates (correct tags among all relevant inputs that can be tagged) almost across the board. As B-chemicals already bear a fairly high precision (91.78\%), it is not advisable to ablate the surface forms, which would pull recall rates down into the 50\%-60\% range. 
 
-Ablation of the lemma (base word) and the phonetic coding ($soundex$) yielded minimal improvements to precisions on some named entity groups but minimal reductions on others. Recall rates all reduced by very small margins. Based on a generally negative outlook on the $F_1$-scores (combined metric of precision and recall), it is advisable not to alate either of he two features.
+Ablation of lemma (base word) and phonetic coding ($soundex$) features yielded minimal improvements to precisions on some named entity groups, while inflicting minimal reductions on others. Recall rates reduced by very small margins across the board. With generally negative outlooks of $F_1$-scores (combined measure of precision and recall) after knocking out either of these features, it is advisable not to ablate either.
 
-Ablating the part-of-speech produced the greatest precision improvements to most groups, but mostly lowered the recall rate substantially. This is also reflected in the overall negative outlook on the combined $F_1$-scores. Therefore it is not advisable to ablate the part-of-speech feature. 
+Ablating part-of-speech produced the greatest precision improvements to most groups, but reduced the recall rate substantially for most named entity classes, especially for B-Chemicals. This is also reflected by the reduced $F_1$-scores. As part-of-speech provides local information around the observed token regarding the structure of the sentence, it is foreseeable that a lot more tokens would be mis-tagged without these information, resulting in the recall penalty. Therefore, it is not advisable to ablate the part-of-speech feature.
 
-Finally, ablating the chunk information from the feature set improved the precision without significantly affecting the recall rate in most cases, resulting in improved $F_1$-scores for all named entity classes barring diseases within entities (I-Disease) with a minimal decrease. Therefore, it is advisable to ablate the chunk information from the feature set used.
+Finally, ablating the chunk information from the feature set improved the precision without significantly affecting the recall rate in most cases, resulting in improved $F_1$-scores for all named entity classes barring diseases within entities (I-Diseases, receiving a minor decrease). Therefore, it is advisable to ablate the chunk information from the feature set used.
 
-Vertically, precision and recall rates of terms outside entities (O) are high and only very minimally affected by ablating any of the features, which is generally expected in entity recognition operations due to the abundance of outside tokens between short named entities \cite{ratinov2009design}.
+Comparing vertically, precision and recall rates of terms outside entities (O) were high and only minimally affected by the ablation of any of the features. This is usually expected during entity recognition operations, due to the abundance of outside tokens between short named entities \cite{ratinov2009design}.
 
 \subsection{Improvements to the base tagger}
 
-After removing chunk information to improve performance of the base feature set (as described above), I will first experiment with expanding the \emph{n}-gram feature set by expanding unigram features into trigram features. Then, I will examine the effects of adjusting several parameters of the L-BFGS training algorithm used in \emph{crfsuite}.
+After removing chunk information to improve performance of the base feature set as determined above, I first experimented with expanding the \emph{n}-gram feature set by extending unigram features into trigram features. After applying the favourable changes observed after the extensions, I examined the effects of adjusting several parameters of the L-BFGS training algorithm used in \emph{crfsuite}.
 
-\subsubsection{Expansion of unigram features}
+\subsubsection{Extension of unigram features}
 
-Evaluations of word representation features in entity recognition by Tang et al. \cite{tang2014evaluating} demonstrated the benefits of using trigram features in word stemming. With this as inspiration, I iteratively expanded the unigram features of lemma, part-of-speech, and the phonetic coding ($soundex$) in the feature set. The order of expansion was chosen due to lemma being directly related to word stemming, part-of-speech correlations between neighbouring words normally being important, and the phonetic coding being the one left. The resulting performance information are shown in Figure \ref{fig:trigrams}.
+During evaluations of word representation features used in entity recognition, Tang et al. \cite{tang2014evaluating} noted the benefits of utilising trigram features in word stemming. Drawing inspiration, I iteratively extended the unigram features of lemma, part-of-speech, and the phonetic coding ($soundex$) in the feature set. The order when extending the features was determined on the following basis: first extending lemma for its direction relation to word stemming; then part-of-speech with correlations between neighbouring words being considered important; and finally the phonetic coding being the one left from the original feature set. The resulting performance changes are shown in Figure \ref{fig:trigrams}.
 
 \begin{figure}[h]
 \begin{center}
@@ -148,15 +148,15 @@ I-Disease    & 0.7819 & 0.6103 & 0.6855 & 0.7795 & 0.6110 & 0.6850 \\ \hline
 I-Chemical  & 0.7884 & 0.6138 & 0.6903 & 0.8010 & 0.6241 & 0.7016 \\ \hline
 \textbf{Macro-average} & 0.8570 & 0.7032 & 0.7690 & 0.8587 & 0.7049 & 0.7706 \\ \hline
 \end{tabular}
-\caption{\label{fig:trigrams} Resulting tagging performance on the \emph{devel} dataset after expanding unigram features into trigram features in the baseline feature set. ``None'' represents the baseline feature set with $chunk$ ablated.}
+\caption{\label{fig:trigrams} Resulting tagging performance on the \emph{devel} dataset after incrementally extending unigram features into trigram features. ``None'' represents the original feature set with $chunk$ ablated.}
 \end{center}
 \end{figure}
 
-While the precision of B-Chemical tagging continues to follow the declining trend discussed in \ref{subsec:ablating} (although not as severe in unigram expansion as in feature ablation), expanding unigram features of lemma, part-of-speech, and the phonetic coding into trigrams have resulted in improved or roughly equal precisions, recall rates -- and hence $F_1$-scores. Precision improvements were most notable from the additions of lemma and phonetic coding on chemicals within entities (I-Chemical), showing the influence of phonetic features of nearby entities on chemical entity recognition. The strongest improvement of recall and the $F_1$-score originated from expanding part-of-speech to nearby entities, demonstrating the importance of expanding the semantic scope. While precisions of some named entities took a small hit when the phonetic coding ($soundex$) was added, the improved macro-average precision as well as generally improved recall rates and $F_1$-scores were behind my choice of retaining all three unigram expansions.
+While the precision of B-Chemical tagging continued to follow the declining trend as discussed in \ref{subsec:ablating} (although not as severe as in feature ablation), expanding unigram features of lemma, part-of-speech, and the phonetic coding into trigrams all resulted in improved or largely unchanged precisions, recall rates, and $F_1$-scores. Precision improvements were most significant after the expansions of lemma and phonetic coding on chemicals within entities (I-Chemicals), displaying the considerable influence of nearby phonetic features on chemical entity recognition accuracy. The strongest improvements in recall and the $F_1$-score came from expanding part-of-speech, again demonstrating the importance of an extended semantic scope. While precisions of some named entities took a small hit when the phonetic coding ($soundex$) was added, the improved macro-average precision as well as generally improved recall rates and $F_1$-scores backed my choice of retaining all three extensions of unigrams into trigrams in the feature set.
 
 \subsubsection{Adjustment of training parameters}
 
-The L-BFGS training algorithm used in entity recognition uses L2 regularization, which is normally more efficient than L1 \cite{cortes20092}, with a regularization parameter influencing the levels of bias and overfitting. Various values around the default $c2 = 1$ were tested, with broadly similar trends in variations of precision, recall, and $F_1$-score in individual named entities. Therefore, only the macro-average metrics from tagging the \emph{devel} dataset with a model trained on each value of $c2$ are plotted in Figure \ref{fig:c2}.
+The L-BFGS training algorithm used in entity recognition performs L2 regularization, which is usually more efficient than L1 \cite{cortes20092}, with a regularization parameter ($c2$) controlling the trade-offs between bias and overfitting. Various values of $c2$ around the default $c2 = 1$ were tested, with broadly similar trends in precision, recall, and $F_1$-score on individual named entities. Therefore, only the macro-averages from tagging the \emph{devel} dataset with a model trained on different values of $c2$ are plotted in Figure \ref{fig:c2}.
 
 \begin{figure}[h]
 \begin{center}
@@ -201,9 +201,9 @@ coordinates {
 \end{center}
 \end{figure}
 
-A reduced $c2$ parameter results in longer training, but also generally improved recall and the overall $F_1$-score. With the adverse effects of extended training time and reduced precision (due to increased overfitting), as well as diminished gains in recall, $c2=0.25$ was chosen as the $c2$ value of choice.
+A reduced $c2$ parameter resulted in longer training, but also generally improved recall and the overall $F_1$-score. Considering the adverse effects of extended training time and reduced precision due to increased overfitting, as well as diminishing gains in recall, $c2=0.25$ was chosen as the final $c2$ value.
 
-With $c2=0.25$, L-BFGS also allows different line search algorithms, which yield roughly the same training speed, as well as almost the same performance with all named entity classes, as shown in Figure \ref{fig:linesearch}. Therefore the default More and Thuente's method was kept unchanged.
+L-BFGS also supports different line search algorithms, which when alternated yielded roughly the same training speed and performance for all named entity classes, as shown in Figure \ref{fig:linesearch}. Therefore the default More and Thuente's method was retained as the line search algorithm.
 
 \begin{figure}[h]
 \begin{center}
@@ -222,9 +222,9 @@ I-Chemical  & 0.8048 & 0.6367 & 0.7110 & 0.8048 & 0.6367 & 0.7110 & 0.8048 & 0.6
 \end{center}
 \end{figure}
 
-\subsection{Evaluate the improved model on the test set}
+\subsection{Evaluating the improved model on the test set}
 
-To summarise, the changes made on the baseline entity recognizer include the ablation of chunk information from the feature set during feature extraction; expanding lemma, part-of-speech, and phonetic coding ($soundex$) features from unigrams into trigrams (covering feature information of entities before and after the current word); as well as adjusting L-BFGS' $c2$ regularization parameter to 0.25. A comparison between the improved model and the original model is shown in Figure \ref{fig:improved-compare}.
+To summarise, the changes made on the original entity recognition model include the ablation of chunk information from the feature set during feature extraction; extensions of lemma, part-of-speech, and phonetic coding ($soundex$) features from unigrams into trigrams (covering features of tokens before and after the current one); as well as adjusting L-BFGS' $c2$ regularization parameter to 0.25. A comparison between the improved model and the original model when tagging the \emph{test} dataset is shown in Figure \ref{fig:improved-compare}.
 
 \begin{figure}[h]
 \begin{center}
@@ -239,17 +239,17 @@ I-Disease    & 0.7522 & 0.6434 & 0.6936 & 0.7311 & 0.6178 & 0.6697 & +3.57\% \\ 
 I-Chemical  & 0.7998 & 0.6087 & 0.6913 & 0.7438 & 0.6081 & 0.6691 & +3.32\% \\ \hline
 \textbf{Macro-average} & 0.8505 & 0.7139 & 0.7732 & 0.8325 & 0.6899 & 0.7506 & +3.01\% \\ \hline
 \end{tabular}
-\caption{\label{fig:improved-compare} A comparison between the improved model and the original entity recognition model on tagging performance on the \emph{test} dataset.}
+\caption{\label{fig:improved-compare} Performance comparison between the improved entity recognition model and the original model on tagging the \emph{test} dataset.}
 \end{center}
 \end{figure}
 
-Changes made to features and L-BFGS parameters resulted in a model which yields improved precision and recall across the board. Combining the metrics of precision and recall, changes in $F_1$-scores are shown on the right of Figure \ref{fig:improved-compare}. The already high-precision and high-recall terms outside entities received the least improvement, while disease terms at the start of entities benefited the most from the improved model. More than 3\% of improvements were made to all other named entity classes and the macro-average. Based on these results from testing on the unseen \emph{test} input dataset, I believe it is reasonably conclusive that the improved model is superior to the original in entity recognition of environment and disease terms.
+Feature set and parameter changes resulted in a model with improved precision and recall across the board. As the combined measure of precision and recall, changes in $F_1$-scores are also shown on the right of Figure \ref{fig:improved-compare}. Terms outside entities (O's) with already high precision and recall received the least improvement, while disease terms at the start of entities (B-Diseases) benefited the most from the improved model. Greater than 3\% of improvements were observed for all other named entity classes and the macro-average. Based on these results from tagging the unseen \emph{test} input dataset, I believe it is reasonable to conclude that for entity recognition of environmental and disease concepts, the improved model is superior to the original model.
 
 \section{Grounding named entities through approximate string matching} \label{sec:grounding}
 
-The MESH concept dictionary provides terms for two classes of entities: chemicals and diseases. Based on the class of entity determined by the improved entity recognition model from the previous section, all possible choices of the specified class in the MESH dictionary were supplied to the approximate string matching process facilitated by the \verb|fuzzywuzzy| \cite{fuzzywuzzy} library. With the initial approach, best matching dictionary terms were grouped by their original sentences, which were annotated with their respective matched terms in output. In the examples presented below, \verb|**| will be used to annotate terms grounded in the sentence, with reference numbers point to the grounded entity from the dictionary after the sentence.
+The MESH concept dictionary contains terms from two classes of entities: chemicals and diseases. For the lemma of each tagged token within a chemical or disease entity, all possible choices of the relevant class from the MESH dictionary were supplied to an approximate string matching process facilitated by the \verb|fuzzywuzzy| \cite{fuzzywuzzy} library. With a na\"ive approach allowing the simplest implementation, the tokens were grounded individually. (In the examples presented below, \verb|**| will be used to annotate grounded terms in the sentence, with reference numbers pointing to entity names grounded from the dictionary).
 
-Unfortunately, this initial approach clearly appeared to be inadequate due to the lack of connecting recognised terms belonging to a continuous entity:
+Unfortunately, this na\"ive approach appeared to be clearly inadequate, as multi-token entities were not reassembled:
 
 \begin{lstlisting}[breaklines]
 **Urine**{1} **N**{2} **-**{3} **acetyl**{4} **-**{5} **beta**{6} **-**{7} **D**{8} **-**{9} **glucosaminidase**{10} - - a marker of **tubular**{11} **damage**{12} ?
@@ -267,9 +267,9 @@ Unfortunately, this initial approach clearly appeared to be inadequate due to th
 {12} axonal damage (Score: 90)
 \end{lstlisting}
 
-The first ten terms in the above sentence included in the \emph{devel} dataset are designated as being outside a named entity class (``O''), but mis-recognised by the entity recognition model as a chemical spanning across multiple terms (in fact, the assembled term is an enzyme, which can be counted as a chemical but not considered as such by the dataset's context). The result of the fragmented individual approximate string matching process is a long list of poor matches annotated. Similarly, the fragmentation of ``tabular'' and ``damage'' caused them to be individually matched with separate, irrelevant terms in the dictionary.
+The first ten terms extracted from the above sentence were designated as being outside a named entity class (``O'') by the reference labels, but mis-recognised by the entity recognition model as a chemical spanning across multiple terms (in fact, the original term is an enzyme, which can be counted as a chemical but not included in the dictionary). The resulting attempt to match the fragmented components individually produced a long list of poorly matched entities. Similarly, the fragmentation of ``tabular'' and ``damage'' resulted in them being individually matched with separate, irrelevant entities from the dictionary.
 
-These two errors highlight the need of reassembling neighbouring terms belonging to the same entity before attempting approximate string matching. Therefore, the grounding process was modified to first reassemble these neighbouring terms together (e.g. from ``... + $O$ + $B-Chemical$ + $I-Chemical$ + $I-Chemical$ +  $O$ + ...'' to ``... + $O$ + $Chemical$ +  $O$ + ...'') before matching the assembled term with the best approximation in the dictionary. The above example now becomes:
+These two errors highlighted the need of reassembling neighbouring tokens belonging to the same entity before attempting grounding. Therefore, \textbf{the grounding process was modified to first reassemble these neighbouring terms together} (e.g. from ``... + $O$ + $B-Chemical$ + $I-Chemical$ + $I-Chemical$ +  $O$ + ...'' to ``... + $O$ + $Chemical$ +  $O$ + ...'') before matching the assembled term with the best approximation in the dictionary. The previous grounded example is now:
 
 \begin{lstlisting}[breaklines]
 **Urine N - acetyl - beta - D - glucosaminidase ** {1} - - a marker of **tubular damage ** {2} ? 
@@ -277,9 +277,9 @@ These two errors highlight the need of reassembling neighbouring terms belonging
 {2} acute tubular necrosis (Score: 86)
 \end{lstlisting}
 
-While the enzyme is still not matched by an appropriate term in the dictionary (which likely does not exist), with reassembly applied, ``acute tubular necrosis'' is now a very good biomedical description of ``tubular damage'' in the original text. To further resolve the lack of dictionary coverage over complex chemical constructs, efficient co-occurrence-based concept associations \cite{tsuruoka2008facta} could aid the grounding system in finding the best-matching entity based on functional groups in the term. 
+While the enzyme is still not matched by an appropriate entity from the dictionary (as it is not included), with reassembly applied, ``acute tubular necrosis'' is now a very good biomedical description of ``tubular damage'' in the original text. To further resolve the lack of dictionary coverage over complex chemical constructs, concept associations generated from co-occurrences of functional groups \cite{tsuruoka2008facta} could aid the grounding system in finding the best-matching entity efficiently.
 
-Overall, the grounding method with entity reassembly works fairly well, such as on the followed sentence:
+Overall, the grounding method with entity reassembly worked fairly well, such as on the following sentence:
 
 \begin{lstlisting}[breaklines]
 BACKGROUND : **Calcitriol ** {1} therapy suppresses serum levels of parathyroid hormone ( PTH ) in patients with **renal failure ** {2} but has several drawbacks , including **hypercalcemia ** {3} and / or marked suppression of bone turnover , which may lead to adynamic bone disease . 
@@ -288,12 +288,12 @@ BACKGROUND : **Calcitriol ** {1} therapy suppresses serum levels of parathyroid 
 {3} hypercalcemia (Score: 100)
 \end{lstlisting}
 
-While Calcitriol does not exist in the MESH dictionary, it does increase the body's intake of its closest match in the dictionary -- Calcium (Ca). Although this is mostly a lucky match due to the lack of a less relevant term with a shorter edit distance, similar processes of inferring terms through biomedical relations have already been applied elsewhere to improve grounding, such as utilising contrastive information between proteins \cite{kim2005biocontrasts}. More systematically, machine learning-based inference systems trained on biomedical databases can be used to effectively construct knowledge base from unstructured biomedical information \cite{shin2015incremental}. In the above example, ``renal failure'' was also correctly matched with the corresponding term in the dictionary after entity reassembly before grounding.
+While Calcitriol does not exist in the MESH dictionary, it does increase the body's intake of its closest match in the dictionary -- Calcium (Ca). Although this is mostly a lucky match due to the lack of a less relevant term with a shorter edit distance, similar processes of inferring terms through biomedical relations have already been applied on other dictionaries to improve grounding performance, such as inferring through contrastive information between proteins \cite{kim2005biocontrasts}. More systematically, machine learning-based inference systems trained on biomedical databases (e.g. gene ontology) can be used to effectively construct knowledgebase from unstructured biomedical information \cite{shin2015incremental}. 
 
-Some other issues do persist after entity reassembly, such as the lack of ability to match complex acronyms with their full base words:
+In the above example, ``renal failure'' was also correctly matched with the corresponding term in the dictionary after entity reassembly. Other issues do however persist after the reassembly modification, such as the inability to match uncommon acronyms with their full base words:
 
 \begin{lstlisting}[breaklines]
-(Simple acronyms)
+(Simple acronyms, easy matching)
 CBA / **Ca ** {1} male mice started on **AZT ** {2} 0 . 75 mg / ml **H2O ** {3} at 84 days of age and kept on it for 687 days when dosage reduced to 0 . 5 mg / ml **H2O ** {4} for a group , another group removed from **AZT ** {5} to see recovery , and third group remained on 0 . 75 mg . 
 {1} Ca (Score: 100)
 {2} AZT (Score: 100)
@@ -301,15 +301,15 @@ CBA / **Ca ** {1} male mice started on **AZT ** {2} 0 . 75 mg / ml **H2O ** {3} 
 {4} H2O (Score: 100)
 {5} AZT (Score: 100)
 
-(Complex, lesser-known acronyms)
+(Complex, lesser-known acronyms, hard matching)
 RESULTS : In Nx dogs , **OCT ** {1} significantly decreased serum PTH levels soon after the induction of **renal insufficiency ** {2} . 
 {1} methoctramine (Score: 90)
 {2} renal insufficiency (Score: 100)
 \end{lstlisting}
 
-From the original literature \cite{monier199922}, ``OCT'' refers to Oxacalcitriol, which while nevertheless not in the dictionary, was incorrectly interpreted as methoctramine. It is possible to resolve most acronyms into canonical forms through fixed or dynamic rules based on ontology knowledge \cite{naderi2011organismtagger}.
+From the original literature \cite{monier199922}, ``OCT'' refers to Oxacalcitriol, which is not present in the dictionary, causing ``OCT'' to be interpreted as methoctramine. However, even if Oxacalcitriol was in the dictionary, it is unlikely that crude approximate string matching would have found Oxacalcitriol from ``OCT'' with a long edit distance involved, when scrambled with confusing terms such as ``OCD'' already in the dictionary. It is possible, however, to resolve most acronyms into canonical forms with static or dynamic rules generated from ontology knowledge \cite{naderi2011organismtagger}.
 
-Finally, common proportions of biomedical composite words and multi-word nouns can lead to incorrect groundings of tagged terms when a direct match with the dictionary vocabulary does not occur. For example:
+Finally, common sections of biomedical composite words and multi-word nouns can cause incorrect groundings when a direct match with the dictionary vocabulary is not possible. For example:
 
 \begin{lstlisting}[breaklines]
 Histological examination on 9 of 10 mice with such **thrombocytopenia ** {1} showed changes compatible with **myelodysplastic syndrome ** {2} ( **MDS ** {3} ) . 
@@ -318,25 +318,27 @@ Histological examination on 9 of 10 mice with such **thrombocytopenia ** {1} sho
 {3} DES (Score: 67)
 \end{lstlisting}
 
-Myelodysplastic syndromes concern bone marrows, while Fanconi syndrome describes kidney conditions. With the nature of the conditions entirely changed, this result from grounding is entirely erroneous. Methods to better distinguish semantic compositions of compound words (``compound bracketing'') through unsupervised probabilistic models \cite{pecina2010lexical}, as well as CRF post-processing and lexicon/dictionary-supported normalization \cite{lee2016audis} have been developed to improve accuracy when grounding compound words and multi-word nouns.
+Myelodysplastic syndromes are associated with bone marrows, while Fanconi syndrome describes kidney conditions. With vastly different natures of conditions, results from this grounding attempt were erroneous. Methods to better distinguish semantic compositions of compound words (known as ``compound bracketing'') with unsupervised probabilistic models \cite{pecina2010lexical}, as well as CRF post-processing and lexicon/dictionary-supported normalization \cite{lee2016audis} have been developed to improve accuracy when grounding compound words and multi-word nouns.
 
-In general, a further improved grounding system may have the following features:
+In summary, a better grounding system may have the following features:
 \begin{itemize}
-	\item Co-occurrence concept associations that can be queried efficiently \cite{tsuruoka2008facta} are used to find best-matching entities of complex chemical constructs if a direct match in vocabulary does not exist;
+	\item Functional group associations that can be queried efficiently \cite{tsuruoka2008facta} are used to find best-matching entities of complex chemical constructs if a direct match in vocabulary is not possible;
 	\item For sources containing unstructured biomedical information, databases storing relational information \cite{kim2005biocontrasts} between entities are used to train inference agents \cite{shin2015incremental} to better resolve terms without a direct match;
-	\item To resolve uncommon acronyms that are not present in the dictionary, rules generated from ontology databases are applied to resolve the acronyms into canonical forms \cite{naderi2011organismtagger}, which are more likely to encounter good matches during grounding;
-	\item Unsupervised probabilistic models \cite{pecina2010lexical} and CRF-based normalization algorithms \cite{lee2016audis} are used to improve accuracy when grounding terms that are compositions.
+	\item To resolve unfamiliar acronyms not present in the dictionary, rules generated from ontology databases are applied to resolve the acronyms into canonical forms \cite{naderi2011organismtagger}, which are more likely to encounter good matches during grounding;
+	\item Unsupervised probabilistic models \cite{pecina2010lexical} and CRF-based normalization algorithms \cite{lee2016audis} are used to improve accuracy when grounding composite terms.
 \end{itemize}
 
 \section{Identifying associations between disease and chemical mentions}
 
-The full abstract collection of PubMed texts on chemically induced disorders numbered 301,084,933 lines, with words already processed into a format identical to those used in Section \ref{sec:a-crf-features}. With reference named entity classes unavailable for each surface word (defaulting to outside entities), the improved entity recognition model from Section \ref{sec:a-crf-features} was used to perform entity recognition on a total of 301,084,933 surface words from 10,573,978 sentences. Tags generated through entity recognition were then cross-referenced with the original surface words and their lemmas for grounding, which was conducted in parallelised batches to reduce memory footprint. 
+The full abstract collection of PubMed texts on chemically induced disorders numbered 301,084,933 lines, with words already pre-processed into a format identical to those used as source in Section \ref{sec:a-crf-features}. With referencing named entity classes unavailable (defaulting to outside entities), the improved entity recognition model trained in Section \ref{sec:a-crf-features} was used to perform entity recognition on all 301,084,933 lemmas of surface form words from 10,573,978 sentences. Tags generated through entity recognition were then cross-referenced with the original surface words and their lemmas for grounding, the process of which was conducted in parallelised batches to reduce memory footprint. 
 
 \subsection{Simple co-occurrence counts} \label{subsec:simple-co}
 
-With grounded entities grouped by the sentences they originated from, duplicate entities within the same sentence were removed, with the assumption that multiple mentions of a noun entity in the same sentence is primarily for clarity rather than emphasis \cite{clark1979search}. Grounded entities in the sentence were then sorted in alphanumeric order to preserve consistency in composing co-mention pairs. The mention of each entity in each sentence was recorded globally as an occurrence of that entity. All possible in-order combinations of entities of length 2 were then generated with Python's \verb|itertools.combinations|. Based on the context of the study, an additional filter was placed so that only co-mention pairs of a chemical and a disease are recorded. Implementations of these pre-processing steps can be found in Figure \ref{fig:preprocessing} of Appendix \ref{sec:implementations}.
+With grounded entities grouped by the sentences they originated from, duplications of entities within the same sentence were removed, with the assumption that multiple mentions of a noun entity in the same sentence are primarily for clarity rather than emphasis \cite{clark1979search}. Grounded entities in the sentence were then sorted into a consistent alphanumeric order to preserve consistent ordering of co-mention pairs. Mentioning of a unique entity within a sentence was recorded globally as an occurrence of that entity. 
 
-By the number of occurrences, the ten most common grounded entities and the pairs thereof in the PubMed abstract texts are shown in Figure \ref{fig:popular-individuals} and Figure \ref{fig:popular-pairs}.
+All possible in-order combinations of grounded entities were then generated (length of 2 only), forming pairs of entities within the same sentence. Based on the context of the study, an additional filter was placed so that only co-mention pairs of a chemical and a disease will be recorded. Implementations of these pre-processing steps can be found in Figure \ref{fig:preprocessing} within Appendix \ref{sec:implementations}.
+
+The ten most common grounded entities and the pairs thereof from the PubMed abstract texts are shown in Figure \ref{fig:popular-individuals} and Figure \ref{fig:popular-pairs}.
 
 \begin{figure}[h]
 \begin{center}
@@ -380,15 +382,15 @@ Count & Probability & MESH ID & Name & MESH ID & Name \\ \hline
 \end{center}
 \end{figure}
 
-It was expected that by the sole criterion of number of occurrences, chemicals and syndromes of conditions commonly involved in the studies of environments and diseases will occupy a significant proportions of the top tens. This was observed in Figure \ref{fig:popular-individuals} with the presence of hydrogen, nitrogen oxide, calcium, as well as ``tumour'', ``infections'' and ``deaths''. These concepts alone do not confer a significant amount of useful information about chemical-induced diseases. Entities related to more specific concepts do exist, however, such as two chemicals (C034818, C066430) associated with modulation of GABAA receptors, which affect anxiety-related mental states, suggesting the prominence of studies in chemically induced disorders among the abstract texts. Diseases related to different organs within the top ten are also good indicators of lesions involved in the studies.
+It was expected that, by the sole criterion of number of occurrences, chemicals and syndromes of conditions commonly involved in the studies of environments and diseases will occupy a significant proportions of the top tens. This was confirmed in Figure \ref{fig:popular-individuals} with the presence of hydrogen, nitrogen oxide, calcium, as well as ``tumour'', ``infections'' and ``deaths''. These concepts alone do not confer a significant amount of useful information about chemically induced disorders. Entities related to more specific concepts do however exist, such as two chemicals (C034818, C066430) associated with modulation of GABAA receptors, which affect anxiety-related mental states, suggesting the relative prominence of GABAA-related studies among the abstract texts. Diseases concerning different organs among the top ten are also good indicators of common lesions involved in the studies.
 
-Apart from the potential links between creatinine, cisplatinum (Cisplatin), and tumours, most of the top co-mentions based on simple co-occurrence counts are associated with a single class of diseases -- endometrial hyperplasia or cancer. This signals a key limitation of ranking associations based on simple co-occurrence counts: source texts with imbalanced compositions of study can make broad observations of associations between chemicals and diseases difficult. Once again the three associations between hydrogen and diseases provide very little useful information, as hydrogen is an almost-universal component of organic molecules. 
+Apart from the suggested potential links between creatinine, cisplatinum (Cisplatin), and tumours; most of the top co-mentions based on simple co-occurrence counts in Figure \ref{fig:popular-pairs} were associated with a single class of diseases -- endometrial hyperplasia or cancer. This signals a key limitation in ranking associations based on simple co-occurrence counts: source texts with imbalanced compositions of study can make broad observations of associations between chemicals and diseases difficult. Once again the three associations between hydrogen and diseases provide very little useful information, as hydrogen is an almost-universal component of organic molecules. 
 
-To improve the effectiveness of co-occurrence count-based rankings, it may be possible to take ideas from object categorisation techniques by introducing relative locations (or in text mining, locations of grounded entities in sentences) of terms into consideration \cite{galleguillos2008object}, or to borrow from machine translation techniques by applying arithmetic and geometric mean functions to co-occurrence counts from an imbalanced corpus \cite{zhu2014improving}. Ultimately however, the aforementioned issues prompt more sophisticated statistical measures to be employed for better identifying the links between environmental chemicals and diseases.
+To improve the effectiveness of co-occurrence count-based rankings, it may be possible to take ideas from object categorisation techniques by considering relative locations (which are locations of grounded entities in sentences in text mining)\cite{galleguillos2008object}, or to borrow from machine translation techniques and apply arithmetic and geometric mean functions to co-occurrence counts from an imbalanced corpus \cite{zhu2014improving}. Ultimately however, the aforementioned issues prompt more sophisticated statistical measures to be deployed, in order to better identify the links between environmental chemicals and diseases.
 
 \subsection{Statistical measures}
 
-For the purpose of calculating occurrence probabilities, all sentences with any mention of a chemical or disease are counted into the total, even if a pair of chemical and disease cannot be established within the sentence. This is to maintain the consistency between chemical occurrences and disease occurrences. In addition to occurrences of individual and pairs of entities, four statistical measure are considered: Pointwise Mutual Information (PMI), Normalized Pointwise Mutual Information (NPMI), the Jaccard coefficient/index, and Symmetric Conditional Probability (SCP). With occurrences of pairs of chemical and disease entities recorded in dictionaries indexed by 2-tuples of IDs, calculations of these statistical co-occurrence metrics for pair of entities are straightforward through dictionary comprehensions, as shown in Figure \ref{fig:stats-calc} of Appendix \ref{sec:implementations}. Top ten associations as measured by these metrics are shown in Figures \ref{fig:pmi}, \ref{fig:npmi}, \ref{fig:jaccard}, and \ref{fig:scp} respectively. Logarithms with base 2 were used for all relevant calculations.
+For the purpose of calculating occurrence probabilities, all sentences with any mention of a chemical or disease are counted into the total, even if a pair of chemical and disease cannot be established within the sentence. This is to maintain probability consistency between chemical occurrences and disease occurrences. In addition to occurrences of individual and pairs of entities, four statistical measure were considered: Pointwise Mutual Information (PMI), Normalized Pointwise Mutual Information (NPMI), the Jaccard coefficient/index, and Symmetric Conditional Probability (SCP). With occurrences of pairs of chemical and disease entities recorded in dictionaries indexed by 2-tuples of IDs, calculations of these statistical co-occurrence metrics for pairs of entities were straightforward through dictionary comprehensions, as shown in Figure \ref{fig:stats-calc} within Appendix \ref{sec:implementations}. Top ten associations as measured by these metrics are shown in Figures \ref{fig:pmi}, \ref{fig:npmi}, \ref{fig:jaccard}, and \ref{fig:scp} respectively. Logarithms with base 2 were used for all logarithmic calculations.
 
 \begin{figure}[h]
 \begin{center}
@@ -411,7 +413,7 @@ For the purpose of calculating occurrence probabilities, all sentences with any 
 \end{center}
 \end{figure}
 
-With mutual dependence between pairs of chemicals and diseases identified by PMI in Figure \ref{fig:pmi}, a broad range of associations between medicinal chemicals and the diseases or conditions they treat or induce were established. For suxamethonium chloride, which induces fasciculations, top ten associations also covered its primary contra-indication (muscular dystrophy) \cite{suxamethonium}. To properly distinguish between indications and contra-indications among diseases or conditions, an enhanced dictionary or a set of defined relations \cite{kim2005biocontrasts} is required.
+With mutual dependence between pairs of chemicals and diseases identified by PMI in Figure \ref{fig:pmi}, a broad range of associations between medicinal chemicals, and the diseases or conditions they treat or induce were established. For fasciculation-inducing suxamethonium chloride as identified among the top ten associations, its primary contra-indication (muscular dystrophy) \cite{suxamethonium} was also identified. To further distinguish between indications and contra-indications of the same chemicals, an enhanced dictionary or a set of defined relations \cite{kim2005biocontrasts} may be required.
 
 \begin{figure}[h]
 \begin{center}
@@ -434,7 +436,7 @@ With mutual dependence between pairs of chemicals and diseases identified by PMI
 \end{center}
 \end{figure}
 
-With Normalized PMI (NPMI) to constrain the level of co-occurrence indicated by PMI, PMI's occasional over-sensitivity to low frequency data is mitigated \cite{bouma2009normalized}. Some pairs of medicinal chemicals and diseases remain in the top ten, while others have been replaced. Replacements include the fairly obvious poisoning effect of carbon monoxide, and an adverse nerve effect of adriamycinone (Doxorubicinone) \cite[ch. 55]{kompoliti2007drug} if improperly administered via intrathecal injection.
+With Normalized PMI (NPMI) constraining the levels of co-occurrence indicated by PMI, PMI's occasional over-sensitivity to low frequency data can be mitigated \cite{bouma2009normalized}. Some pairs of medicinal chemicals and diseases remain in the top ten associations, while others have been replaced. Notable replacements include the fairly obvious poisoning effect of carbon monoxide, and an adverse nerve effect of adriamycinone (Doxorubicinone) if improperly administered via intrathecal injection \cite[ch. 55]{kompoliti2007drug}.
 
 \begin{figure}[h]
 \begin{center}
@@ -457,7 +459,7 @@ With Normalized PMI (NPMI) to constrain the level of co-occurrence indicated by 
 \end{center}
 \end{figure}
 
-The Jaccard index disregards the shapes and distributions of inputs \cite{leydesdorff2008normalization} to mitigate the undesirable influences thereof when identifying concept associations. A majority of the top ten associations determined by the Jaccard Index are also present in NMPI's top ten. Among the differences, it is notable that the arterial carbon dioxide strengthen effects of pneumocystis pneumonia \cite{bouma2009normalized} has been identified. The direction of this association is opposite to most others with chemicals as sources of effects.
+Through set operations, the Jaccard index disregards the shapes and distributions of inputs \cite{leydesdorff2008normalization} to mitigate their undesirable influences when identifying concept associations. A majority of the top ten associations determined by the Jaccard Index were also present in NMPI's top ten. Among the differences, the arterial carbon dioxide strengthening effects of pneumocystis pneumonia \cite{bouma2009normalized} has been identified. The direction of this association is opposite to most others, with the disease as the source of effects.
 
 \begin{figure}[h]
 \begin{center}
@@ -480,17 +482,17 @@ The Jaccard index disregards the shapes and distributions of inputs \cite{leydes
 \end{center}
 \end{figure}
 
-Finally, being the most focused on conditional cause and effects, Symmetric Conditional Probability (SCP) returned its top ten associations broadly identical to those already identified by NPMI and the Jaccard index. The only new addition appears to be from the use of streptozotocin to induce diabetes in experimental animals \cite{rossini1977studies}. 
+Finally, designed to measure conditional causes and effects, Symmetric Conditional Probability (SCP) returned its top ten associations, which were broadly identical in composition to those already identified by NPMI and the Jaccard index. The only new addition appears to be from the use of streptozotocin to induce diabetes in experimental animals \cite{rossini1977studies}. 
 
 \subsection{Limitations}
 
-In addition to limitations of ranking associations through simple co-occurrence counts discussed in \ref{subsec:simple-co}, two further areas of limitations exist in identifying chemically induced diseases through the method studied in this report. 
+In addition to limitations in ranking associations through simple co-occurrence counts as discussed in \ref{subsec:simple-co}, two further areas of limitations exist in identifying chemically induced disorders through the method studied in this report. 
 
-The first area of limitation lays on the limited effectiveness of automated CRF entity recognition and grounding through approximate string matching. Imperfect entity recognition will cause some entities that can otherwise be appropriately grounded to be mislabelled as outside named entities, which will not be grounded. Limitations of grounding as discussed in Section \ref{sec:grounding} will supply improperly-grounded entities into the calculations of statistical co-occurrence metrics, which in turn affect the accuracies of top associations identified. Entity recognition and grounding algorithms with improved performance are required to mitigate this area of limitation.
+The first area of limitations concerns the limited effectiveness of automated CRF entity recognition and grounding through approximate string matching. Imperfect entity recognition will cause some entities that are otherwise ground-able to be mislabelled as being outside named entities, causing their omission. Limitations in grounding through approximate string matching as discussed in Section \ref{sec:grounding} will supply improperly-grounded entities for calculations of statistical co-occurrence measures, which will in turn affect the accuracies of top associations identified. Entity recognition and grounding algorithms with improved performance are needed to mitigate these limitations.
 
-The second area of limitation was caused by the simplifications made when calculating probabilities and statistical metrics. Duplicates of the same grounded entity within the same sentence were deducted from consideration. Orders of occurrences between different grounded chemical and disease entities within the same sentence, or between different sentences from the same abstract are not considered, which may hold useful information related to their associations \cite{galleguillos2008object}. 
+The second area of limitations originate from the simplifications made when calculating probabilities and statistical metrics. Duplicates of the same grounded entity within the same sentence were deducted. Orders of mentions between different grounded chemical and disease entities within the same sentence, or between different sentences within the same abstract were not considered, which may hold useful information relating to their associations \cite{galleguillos2008object}. 
 
-As each entity or pair of entities is counted at most once in each sentence, the total number of sentences was used as the denominator in probability calculations, so that probabilities of all entities or pairs of entities will have a common denominator. This additional simplification resulted in the omission of sentences with only chemical entities or only disease entities grounded. While at sentence-level they cannot be said to have any associations, additional associations may have been possible if the same sentences within the same abstract could be considered together.
+As each unique entity or pair of entities is counted at most once in each sentence, the total number of sentences was used as the denominator in probability calculations, so that probabilities of all entities or pairs of entities shared a common denominator. This additional simplification resulted in the omission of sentences with only chemical entities or only disease entities identified through grounding. While within a sentence they cannot form any associations between chemicals and diseases, additional associations may have been possible if sentences within the same abstract could be considered together.
 
 \bibliographystyle{IEEEtran}
 \small{\bibliography{report}}
